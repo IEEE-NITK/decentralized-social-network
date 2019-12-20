@@ -1,4 +1,5 @@
 const IPFS = require('ipfs')
+const NodeRSA = require('node-rsa');
 
 async function setupfolders () {
     const node = await IPFS.create()
@@ -17,6 +18,52 @@ async function setupfolders () {
     console.log('Added file contents:', fileBuffer.toString())
     //***************************************//
 
+    // LOOK AT https://www.npmjs.com/package/node-rsa FOR IMPORT AND EXPORT FORMAT
+    // CREATE 2048-BIT KEY FOR HOST
+
+    const key = new NodeRSA({b:2048});
+
+    // UPDATE PUBLIC KEY (n, e) IN DATABASE
+    // (n, d) IS THE PRIVATE KEY
+    // need to use a master key to encrypt and store private key in public profile, to be done later
+    // for now, ADD CODE to store (n,e,d) in public profile
+
+    /*	KEY HAS THE FOLLOWING STRUCTURE
+
+	NodeRSA {
+	  '$options': {
+	    signingScheme: 'pkcs1',
+	    signingSchemeOptions: { hash: 'sha256', saltLength: null },
+	    encryptionScheme: 'pkcs1_oaep',
+	    encryptionSchemeOptions: { hash: 'sha1', label: null },
+	    environment: 'node',
+	    rsaUtils: [Circular]
+	  },
+	  keyPair: RSAKey {
+	    n:
+	    e:
+	    d:
+	    p:
+	    q:
+	    dmp1:
+	    dmq1: 
+	    coeff: 
+	    cache: { keyBitLength: 2048, keyByteLength: 256 },
+	    encryptionScheme: Scheme { key: [Circular], options: [Object] },
+	    signingScheme: Scheme { key: [Circular], options: [Object] },
+	    encryptEngine: { encrypt: [Function: encrypt], decrypt: [Function: decrypt] }
+	  },
+	  '$cache': {}
+	}
+
+    */
+
+    // AS AN EXAMPLE, ADD ENCRYPTED TEXT
+
+    // files_added = await node.add({path: '/root_folder/public_profile/about_me_encrypted.txt', content: key.encrypt('I AM MOHAN DAS, I LOVE SWIMMING!')});
+
+    // write code as above, to get contents of file buffer and print it back
+    // documentation said it takes a buffer object, so before doing toString, can you try key.decrypt(fileBuffer); and see if 'I AM MOHAN DAS...' is printed?
 
     //HASH OF THE ROOT 
     const root  = await node.files.stat('/root_folder')
