@@ -152,3 +152,21 @@ search_peer_directory('QmTNuULgQPpZceebSr15XYFXwRZK7JYF1jjqhHzkGs1nvp').catch(()
    console.log('File Not Found');
 });
 */
+
+// To write a personal post for someone
+async function write_personal_post(friend_peerId , post , post_name) {
+    
+    //ENCRYPT THE POST WITH THE SHARED SECRET KEY
+    const encrypted_post = post;//for now just directly assigning 
+    
+    //We are working with only text files for now! 
+    file_path = '/root_folder/' + friend_peerId + '/personal_post/' + post_name + '.txt' ; 
+
+    const file_added = await node.add({path: file_path, content: encrypted_post});
+
+    //Hash of the file added
+    console.log('Added file:', file_added[0].path, file_added[0].hash);
+
+    //UPDATE THE root_folder HASH IN THE DATABASE NOW
+    
+}
