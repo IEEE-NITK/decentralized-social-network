@@ -1,5 +1,5 @@
 const IPFS = require('ipfs')
-const NodeRSA = require('node-rsa');
+// const NodeRSA = require('node-rsa');
 
 async function setupfolders () {
     const node = await IPFS.create()
@@ -170,3 +170,49 @@ async function write_personal_post(friend_peerId , post , post_name) {
     //UPDATE THE root_folder HASH IN THE DATABASE NOW
     
 }
+
+/** To read all personal posts written for you, by a friend.
+ *  These posts are present in a folder in the friend's node.
+*/
+
+async function read_personal_post(friend_hash) {
+    
+    const node = await IPFS.create();
+
+    // Getting our peerID
+    const nodeDetails = await Promise.resolve(node.id());
+    const myPeerId = nodeDetails.id;
+  
+    // TODO: Query database for root_folder has for given friend_hash (received as function parameter)
+    // and store it in rootHash. Hardcoded for now.
+    const rootHash = 'QmR4WZmUYn3NtkCWUkwBEGJam8nBbeuEpeDfoU95UTzDtu';
+    const file_path = 'ipfs/' + rootHash + '/' + myPeerId + '/personal_post/';
+
+    const files = await node.files.ls('/root_folder/QmQqUVUHvMLEf532sX638Q2RGmqXVg7c34K4BCAxvPBRHx/personal_post');
+  
+    files.forEach(async (file) => {
+      console.log(file);
+      if(file.type == 0)
+      {
+        const buf = await node.files.read('/root_folder/QmQqUVUHvMLEf532sX638Q2RGmqXVg7c34K4BCAxvPBRHx/personal_post/' + file.name);
+        console.log(buf.toString('utf8'));
+      }
+      
+    });
+
+    /** At this point there are two possibilities:
+        1. If the Hello message exists in their folder, the function continues execution.
+        2. If the Hello message does not exist, and UnhandledPromiseRejectionWarning is raised.
+            This is caught in the function call statement.
+    */
+}
+
+
+/** Run this to search for a Hello message created for you in a peer node's directory.
+    Takes in the peer's peerID as parameter.
+*/
+
+read_personal_post('QmQqUVUHvMLEf532sX638Q2RGmqXVg7c34K4BCAxvPBRHx').catch(() => {
+   console.log('File Not Found');
+});
+
