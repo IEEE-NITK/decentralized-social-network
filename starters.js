@@ -1,5 +1,6 @@
 const IPFS = require('ipfs')
-// const NodeRSA = require('node-rsa');
+const NodeRSA = require('node-rsa');
+const sodium = require('libsodium-wrappers');
 
 async function setupfolders () {
     const node = await IPFS.create()
@@ -11,11 +12,11 @@ async function setupfolders () {
     //CONTENTS IN PUBLIC PROFILE IS UNENCRYPTED 
     //TESTING BY ADDING SOME DATA TO PUBLIC PROFILE
     //***************************************//
-    const files_added = await node.add({path: '/root_folder/public_profile/about_me.txt', content: 'I AM MOHAN DAS, I LOVE SWIMMING!'});
+    // const files_added = await node.add({path: '/root_folder/public_profile/about_me.txt', content: 'I AM MOHAN DAS, I LOVE SWIMMING!'});
 
-    console.log('Added file:', files_added[0].path, files_added[0].hash)
-    const fileBuffer = await node.cat(files_added[0].hash)
-    console.log('Added file contents:', fileBuffer.toString())
+    // console.log('Added file:', files_added[0].path, files_added[0].hash);
+    // const fileBuffer = await node.cat(files_added[0].hash);
+    // console.log('Added file contents:', fileBuffer.toString());
     //***************************************//
 
     // LOOK AT https://www.npmjs.com/package/node-rsa FOR IMPORT AND EXPORT FORMAT
@@ -23,22 +24,9 @@ async function setupfolders () {
 
     const key = new NodeRSA({b:2048});
 
-    // UPDATE PUBLIC KEY (n, e) IN DATABASE
-    // (n, d) IS THE PRIVATE KEY
-    // need to use a master key to encrypt and store private key in public profile, to be done later
-    // for now, ADD CODE to store (n,e,d) in public profile
-
     /*	KEY HAS THE FOLLOWING STRUCTURE
 
 	NodeRSA {
-	  '$options': {
-	    signingScheme: 'pkcs1',
-	    signingSchemeOptions: { hash: 'sha256', saltLength: null },
-	    encryptionScheme: 'pkcs1_oaep',
-	    encryptionSchemeOptions: { hash: 'sha1', label: null },
-	    environment: 'node',
-	    rsaUtils: [Circular]
-	  },
 	  keyPair: RSAKey {
 	    n:
 	    e:
@@ -58,24 +46,25 @@ async function setupfolders () {
 
     */
 
-    // AS AN EXAMPLE, ADD ENCRYPTED TEXT
-
-    // files_added = await node.add({path: '/root_folder/public_profile/about_me_encrypted.txt', content: key.encrypt('I AM MOHAN DAS, I LOVE SWIMMING!')});
+    files_added = await node.add({path: '/root_folder/public_profile/about_me_encrypted.txt', content: key.encrypt(sodium.to_base64('Hello 123'))});
 
     // write code as above, to get contents of file buffer and print it back
     // documentation said it takes a buffer object, so before doing toString, can you try key.decrypt(fileBuffer); and see if 'I AM MOHAN DAS...' is printed?
 
+    console.log('Decrypted text', key.decrypt(sodium.from_base64(node.cat(files_added[0].hash))));
+
     //HASH OF THE ROOT 
-    const root  = await node.files.stat('/root_folder')
-    console.log("root_folder hash:")
-    console.log(root.hash)
+    const root  = await node.files.stat('/root_folder');
+    console.log("root_folder hash:");
+    console.log(root.hash);
 
     // UPDATION OF ROOT HASH TO HAPPEN IN DATABSE HERE { FUNCTION NEEDED  }
 
     //HASH OF THE PUBLIC PROFILE
-    const public_profile  = await node.files.stat('/root_folder/public_profile')
-    console.log("public_profile:")
-    console.log(public_profile.hash)
+    const public_profile  = await node.files.stat('/root_folder/public_profile');
+    console.log("public_profile:");
+    console.log(public_profile.hash);
+
 }
 
 // Creation of directory for the given friend and the Hello message.
@@ -212,7 +201,8 @@ async function read_personal_post(friend_hash) {
     Takes in the peer's peerID as parameter.
 */
 
-read_personal_post('QmQqUVUHvMLEf532sX638Q2RGmqXVg7c34K4BCAxvPBRHx').catch(() => {
-   console.log('File Not Found');
-});
+// read_personal_post('QmQqUVUHvMLEf532sX638Q2RGmqXVg7c34K4BCAxvPBRHx').catch(() => {
+//    console.log('File Not Found');
+// });
 
+setupfolders();
