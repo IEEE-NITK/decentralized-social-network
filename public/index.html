@@ -15,13 +15,37 @@
   <body>
     <h1>JS IPFS - Add data to IPFS from the browser</h1>
     <textarea id="source" placeholder="Enter some text here"></textarea>
+    <br>
     <button id="store">Add text to ipfs</button>
+    <br><br>
     <div id="output" style="display: none">
       <div>found in ipfs:</div>
       <div class="content" id="hash">[ipfs hash]</div>
       <div class="content" id="content">[ipfs content]</div>
     </div>
+    <br><br><br>
 
-    <input type="file" id="input">
+
+
+
+    <h2>Create Directory for Friend</h2>
+
+    Friend's PeerID:<br>
+    <input type="text" name="friendpeerID" id="friend_peerID"/><br><br><br>
+    <button id="create_friend_directory">Create Directory</button>
+
+    <br><br>
+
+
+
+    
+    <h2>Add data to your public profile</h2>
+
+    File name:<br>
+    <input type="text" name="file_name" id="filename"/><br>
+    Data:<br>
+    <input type="text" name="file_data" id="filedata"/><br><br>
+    <button id="data_to_public_profile">Add data</button>
+
   </body>
 </html>
