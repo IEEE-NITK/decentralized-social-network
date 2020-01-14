@@ -2,9 +2,9 @@ const IPFS = require('ipfs')
 const NodeRSA = require('node-rsa');
 const sodium = require('libsodium-wrappers');
 
-async function setupfolders () {
+async function setupfolders() {
     const node = await IPFS.create()
-    //CREATING A ROOT FOLDER 
+        //CREATING A ROOT FOLDER 
     await node.files.mkdir('/root_folder');
     //CREATING A PUBLIC PROFILE FOLDER
     await node.files.mkdir('/root_folder/public_profile');
@@ -22,7 +22,7 @@ async function setupfolders () {
     // LOOK AT https://www.npmjs.com/package/node-rsa FOR IMPORT AND EXPORT FORMAT
     // CREATE 2048-BIT KEY FOR HOST
 
-    const key = new NodeRSA({b:2048});
+    const key = new NodeRSA({ b: 2048 });
 
     /*	KEY HAS THE FOLLOWING STRUCTURE
 
@@ -46,7 +46,7 @@ async function setupfolders () {
 
     */
 
-    files_added = await node.add({path: '/root_folder/public_profile/about_me_encrypted.txt', content: key.encrypt(sodium.to_base64('Hello 123'))});
+    files_added = await node.add({ path: '/root_folder/public_profile/about_me_encrypted.txt', content: key.encrypt(sodium.to_base64('Hello 123')) });
 
     // write code as above, to get contents of file buffer and print it back
     // documentation said it takes a buffer object, so before doing toString, can you try key.decrypt(fileBuffer); and see if 'I AM MOHAN DAS...' is printed?
@@ -54,70 +54,70 @@ async function setupfolders () {
     console.log('Decrypted text', key.decrypt(sodium.from_base64(node.cat(files_added[0].hash))));
 
     //HASH OF THE ROOT 
-    const root  = await node.files.stat('/root_folder');
+    const root = await node.files.stat('/root_folder');
     console.log("root_folder hash:");
     console.log(root.hash);
 
     // UPDATION OF ROOT HASH TO HAPPEN IN DATABSE HERE { FUNCTION NEEDED  }
 
     //HASH OF THE PUBLIC PROFILE
-    const public_profile  = await node.files.stat('/root_folder/public_profile');
+    const public_profile = await node.files.stat('/root_folder/public_profile');
     console.log("public_profile:");
     console.log(public_profile.hash);
 
 }
 
 // Creation of directory for the given friend and the Hello message.
-async function create_friend_directory (friend_peerID) {
-   
-   const node = await IPFS.create();
+async function create_friend_directory(friend_peerID) {
 
-   const directory = '/root_folder/' + friend_peerID;
-   await node.files.mkdir(directory);
+    const node = await IPFS.create();
 
-   /** TODO: create a shared-secret key, which is then encrypted with the friend's public key.
-       Place this final output in the hello_message constant declared below. For now, it is 
-       hardcoded to be the friend's peerID.
-   */
+    const directory = '/root_folder/' + friend_peerID;
+    await node.files.mkdir(directory);
 
-   const hello_message = friend_peerID;
-   const file_path = '/root_folder/' + friend_peerID + '/hello.txt'; 
+    /** TODO: create a shared-secret key, which is then encrypted with the friend's public key.
+        Place this final output in the hello_message constant declared below. For now, it is 
+        hardcoded to be the friend's peerID.
+    */
 
-   const files_added = await node.add({path: file_path, content: hello_message});
+    const hello_message = friend_peerID;
+    const file_path = '/root_folder/' + friend_peerID + '/hello.txt';
 
-   console.log('Created Hello message file: ', files_added[0].path, files_added[0].hash)
-   const fileBuffer = await node.cat(files_added[0].hash)
-   console.log('Contents of Hello message file:', fileBuffer.toString())
-} 
+    const files_added = await node.add({ path: file_path, content: hello_message });
+
+    console.log('Created Hello message file: ', files_added[0].path, files_added[0].hash)
+    const fileBuffer = await node.cat(files_added[0].hash)
+    console.log('Contents of Hello message file:', fileBuffer.toString())
+}
 
 
 // Searching for for a Hello message created for us in given node's root folder, and getting the shared-secret.
-async function search_peer_directory (friend_hash) {
+async function search_peer_directory(friend_hash) {
 
-   const node = await IPFS.create();
+    const node = await IPFS.create();
 
-   // Getting our peerID
-   const nodeDetails = await Promise.resolve(node.id());
-   const myPeerId = nodeDetails.id;
-   
-   // TODO: Query database for root_folder has for given friend_hash (received as function parameter)
-   // and store it in rootHash. Hardcoded for now.
-   const rootHash = 'QmYbR8Ery48YbJpJbU18rBRmdjZMmPih9YktKPhrwnRLa4';
-   const helloMessagePath = '/ipfs/' + rootHash + '/' + myPeerId + '/hello.txt';
+    // Getting our peerID
+    const nodeDetails = await Promise.resolve(node.id());
+    const myPeerId = nodeDetails.id;
 
-   // Read the contents of the Hello message, if it exists.
-   const secretMessage = (await node.files.read(helloMessagePath)).toString('utf8');
+    // TODO: Query database for root_folder has for given friend_hash (received as function parameter)
+    // and store it in rootHash. Hardcoded for now.
+    const rootHash = 'QmYbR8Ery48YbJpJbU18rBRmdjZMmPih9YktKPhrwnRLa4';
+    const helloMessagePath = '/ipfs/' + rootHash + '/' + myPeerId + '/hello.txt';
 
-   /** At this point there are two possibilities:
-       1. If the Hello message exists in their folder, the function continues execution.
-       2. If the Hello message does not exist, and UnhandledPromiseRejectionWarning is raised.
-          This is caught in the function call statement.
-   */
-   
-   // The secretMessage should contain the shared-secret encrpyted with my public key.
-   // TODO: decrypt this secret message using my private key.
+    // Read the contents of the Hello message, if it exists.
+    const secretMessage = (await node.files.read(helloMessagePath)).toString('utf8');
 
-   console.log(secretMessage);
+    /** At this point there are two possibilities:
+        1. If the Hello message exists in their folder, the function continues execution.
+        2. If the Hello message does not exist, and UnhandledPromiseRejectionWarning is raised.
+           This is caught in the function call statement.
+    */
+
+    // The secretMessage should contain the shared-secret encrpyted with my public key.
+    // TODO: decrypt this secret message using my private key.
+
+    console.log(secretMessage);
 }
 
 
@@ -143,50 +143,49 @@ search_peer_directory('QmTNuULgQPpZceebSr15XYFXwRZK7JYF1jjqhHzkGs1nvp').catch(()
 */
 
 // To write a personal post for someone
-async function write_personal_post(friend_peerId , post , post_name) {
-    
-    //ENCRYPT THE POST WITH THE SHARED SECRET KEY
-    const encrypted_post = post;//for now just directly assigning 
-    
-    //We are working with only text files for now! 
-    file_path = '/root_folder/' + friend_peerId + '/personal_post/' + post_name + '.txt' ; 
+async function write_personal_post(friend_peerId, post, post_name) {
 
-    const file_added = await node.add({path: file_path, content: encrypted_post});
+    //ENCRYPT THE POST WITH THE SHARED SECRET KEY
+    const encrypted_post = post; //for now just directly assigning 
+
+    //We are working with only text files for now! 
+    file_path = '/root_folder/' + friend_peerId + '/personal_post/' + post_name + '.txt';
+
+    const file_added = await node.add({ path: file_path, content: encrypted_post });
 
     //Hash of the file added
     console.log('Added file:', file_added[0].path, file_added[0].hash);
 
     //UPDATE THE root_folder HASH IN THE DATABASE NOW
-    
+
 }
 
 /** To read all personal posts written for you, by a friend.
  *  These posts are present in a folder in the friend's node.
-*/
+ */
 
 async function read_personal_post(friend_hash) {
-    
+
     const node = await IPFS.create();
 
     // Getting our peerID
     const nodeDetails = await Promise.resolve(node.id());
     const myPeerId = nodeDetails.id;
-  
+
     // TODO: Query database for root_folder has for given friend_hash (received as function parameter)
     // and store it in rootHash. Hardcoded for now.
     const rootHash = 'QmR4WZmUYn3NtkCWUkwBEGJam8nBbeuEpeDfoU95UTzDtu';
     const file_path = 'ipfs/' + rootHash + '/' + myPeerId + '/personal_post/';
 
     const files = await node.files.ls('/root_folder/QmQqUVUHvMLEf532sX638Q2RGmqXVg7c34K4BCAxvPBRHx/personal_post');
-  
-    files.forEach(async (file) => {
-      console.log(file);
-      if(file.type == 0)
-      {
-        const buf = await node.files.read('/root_folder/QmQqUVUHvMLEf532sX638Q2RGmqXVg7c34K4BCAxvPBRHx/personal_post/' + file.name);
-        console.log(buf.toString('utf8'));
-      }
-      
+
+    files.forEach(async(file) => {
+        console.log(file);
+        if (file.type == 0) {
+            const buf = await node.files.read('/root_folder/QmQqUVUHvMLEf532sX638Q2RGmqXVg7c34K4BCAxvPBRHx/personal_post/' + file.name);
+            console.log(buf.toString('utf8'));
+        }
+
     });
 
     /** At this point there are two possibilities:
@@ -197,6 +196,66 @@ async function read_personal_post(friend_hash) {
 }
 
 
+// Function to create the Group Key, encrypt it using the Shared Secret, and store it in the friend peer ID folder
+async function store_group_key(friend_peerID) {
+    // Create the IPFS node
+    const node = await IPFS.create();
+
+    // File path to place the encrypted Group Key in
+    const file_path = '/root_folder/' + friend_peerId + '/group_key.txt';
+
+    // Place the encrypted Group Key in the file
+    const group_key = "<Group Key's contents will be placed here>";
+    const encrypted_group_key = group_key; // The Group Key will be encrypted here, for now it's used without encryption
+    const file_added = await node.add({ path: file_path, content: encrypted_group_key }); // Place the encrypted Group Key in the required file 
+}
+
+
+// Function to read the posts within the Group file, by decrypting and using the Group Key
+async function read_group_post(friend_peerID, shared_secret) {
+
+    /* THE FOLDER CONTAINING GROUP POSTS IS CALLED 'group' */
+
+    // Create the IPFS node
+    const node = await IPFS.create();
+
+    // Retrieve the Encrypted Group Key and Decrypt it
+    const file_path = '/root_folder/' + friend_peerID + '/group_key.txt';
+    const buffer = await ipfs.files.read(file_path) // Buffer of file contents
+    const encrypted_group_key = buffer.toString('utf8') // Encrypted Group Key in string format
+    const group_key = encrypted_group_key; // Decrypt the Encrypted Group Key using the shared secret. Hard-coded for now.
+
+    // Use the Group Key to decrypt the contents of the Group Posts
+    file_path = '/root_folder/group';
+    const files = await node.files.ls(file_path);
+
+    files.forEach(async(file) => {
+        console.log(file);
+        if (file.type == 0) {
+            const buf = await node.files.read('/root_folder/group/' + file.name);
+            console.log(buf.toString('utf8'));
+        }
+
+    });
+}
+
+
+// Function to write a post into the Group Posts
+async function write_group_post(post, post_name) {
+    // Encrypt the post using the Group Key
+    const encrypted_post = post; //Hard-coded for now
+
+    // Place the post in the Group 
+    const file_path = '/root_folder/group/' + post_name;
+    const file_added = await node.add({ path: file_path, content: encrypted_post });
+
+    //Hash of the file added
+    console.log('Added file:', file_added[0].path, file_added[0].hash);
+
+    //UPDATE THE root_folder HASH IN THE DATABASE NOW
+
+}
+
 /** Run this to search for a Hello message created for you in a peer node's directory.
     Takes in the peer's peerID as parameter.
 */
@@ -205,4 +264,5 @@ async function read_personal_post(friend_hash) {
 //    console.log('File Not Found');
 // });
 
-setupfolders();
+// Run this code to set up the user's directory
+// setupfolders();
