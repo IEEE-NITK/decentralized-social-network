@@ -22,6 +22,12 @@ document.addEventListener('DOMContentLoaded', async() => {
         });
 
         console.log('Root folder and public profile created succesfully!')
+
+        // Getting our peerID
+        const nodeDetails = await Promise.resolve(node.id())
+        const myPeerId = nodeDetails.id
+        console.log(myPeerId)
+
     }
 
     async function add_details_to_DB () {
@@ -35,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         console.log(root.hash);
 
         // Add our data to DB.
-        db.put({ '_id': 3, 'peerID': myPeerId, public_key: 'hmm', 'root_hash': 'hmm', 'username': 'krithik' })
+        db.put({ '_id': 4, 'peerID': myPeerId, public_key: 'hmm', root_hash: 'hmm', address: 'need to our get IPFS address somehow', username: 'krithik' })
         .then(() => db.get(myPeerId))
         .then((value) => console.log(value))
     }
@@ -81,9 +87,24 @@ document.addEventListener('DOMContentLoaded', async() => {
     // Creation of directory for the given friend and the Hello message.
     async function create_friend_directory() {
         
+        /**
+         * Does two things:
+         * 1. Adds the IPFS address of the peer to the bootstrap list
+         * 2. Creates a folder for the friend and adds the hello message
+         */
+        
         // TODO: Improve error handling
 
         const friend_peerID = document.getElementById('friend_peerID').value
+        
+        // First add friend to bootstrap list
+        const profile = await db.get(friend_peerID)
+        const friend_address = profile['0']['address']
+
+        const res = await node.bootstrap.add(friend_address)  // Check for errors?
+        console.log(res.Peers)
+
+        // Next create the folder for the friend and add hello message.
         const directory = '/root_folder/' + friend_peerID;
 
         await node.files.mkdir(directory).catch((err) => {
@@ -97,8 +118,6 @@ document.addEventListener('DOMContentLoaded', async() => {
         */
 
         // Getting the friend's public key from the DB
-        
-        const profile = await db.get(friend_peerID)
         console.log(profile['0']['public_key'])  // prints friend's public key
  
         const hello_message = friend_peerID;  // Replace peerID with shared-secret
@@ -112,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         console.log('Created Hello message file: ', files_added[0].path, files_added[0].hash)
         const fileBuffer = await node.cat(files_added[0].hash)
-        console.log('Contents of Hello message file:', fileBuffer.toString())*/
+        console.log('Contents of Hello message file:', fileBuffer.toString())
     }
 
     /* const inputElement = document.getElementById("input");
