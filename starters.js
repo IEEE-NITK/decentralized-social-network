@@ -1,6 +1,6 @@
 const IPFS = require('ipfs')
 const NodeRSA = require('node-rsa');
-const sodium = require('libsodium-wrappers');
+const _sodium = require('libsodium-wrappers');
 
 async function setupfolders() {
     const node = await IPFS.create()
@@ -71,6 +71,12 @@ async function setupfolders() {
 async function create_friend_directory(friend_peerID) {
 
     const node = await IPFS.create();
+    await _sodium.ready;
+    const sodium = _sodium;
+    
+    //GENERATING SHARED SECRET KEY
+    symmetric_key = sodium.crypto_secretbox_keygen();
+    nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES); // new nonce for each encryption
 
     const directory = '/root_folder/' + friend_peerID;
     await node.files.mkdir(directory);
@@ -79,11 +85,19 @@ async function create_friend_directory(friend_peerID) {
         Place this final output in the hello_message constant declared below. For now, it is 
         hardcoded to be the friend's peerID.
     */
-
-    const hello_message = friend_peerID;
+  
+    const hello_message = friend_peerID + ' ' + symmetric_key + ' and ' + nonce;
     const file_path = '/root_folder/' + friend_peerID + '/hello.txt';
 
-    const files_added = await node.add({ path: file_path, content: hello_message });
+    //GET KEY FROM DB
+    const friend_public_key = {n:'something' , e:'something_else'}; 
+    const pubkey = new NodeRSA();
+    pubkey.importKey({
+        n: Buffer.from(friend_public_key.n, 'base64'),
+        e: Buffer.from(friend_public_key.e, 'base64'),
+      }, 'components-public');
+    
+    const files_added = await node.add({ path: file_path, content: pubkey.encrypt(hello_message) });
 
     console.log('Created Hello message file: ', files_added[0].path, files_added[0].hash)
     const fileBuffer = await node.cat(files_added[0].hash)
@@ -95,6 +109,8 @@ async function create_friend_directory(friend_peerID) {
 async function search_peer_directory(friend_hash) {
 
     const node = await IPFS.create();
+    await _sodium.ready;
+    const sodium = _sodium;
 
     // Getting our peerID
     const nodeDetails = await Promise.resolve(node.id());
@@ -108,6 +124,20 @@ async function search_peer_directory(friend_hash) {
     // Read the contents of the Hello message, if it exists.
     const secretMessage = (await node.files.read(helloMessagePath)).toString('utf8');
 
+    // Getting my private key object from the keystore
+    const sk = get_private_key_object; // eslint-disable-line no-underscore-dangle
+    const privkey = new NodeRSA();
+    privkey.importKey({
+      n: Buffer.from(sk.n, 'base64'),
+      e: Buffer.from(sk.e, 'base64'),
+      d: Buffer.from(sk.d, 'base64'),
+      p: Buffer.from(sk.p, 'base64'),
+      q: Buffer.from(sk.q, 'base64'),
+      dmp1: Buffer.from(sk.dp, 'base64'),
+      dmq1: Buffer.from(sk.dq, 'base64'),
+      coeff: Buffer.from(sk.qi, 'base64'),
+    }, 'components');
+
     /** At this point there are two possibilities:
         1. If the Hello message exists in their folder, the function continues execution.
         2. If the Hello message does not exist, and UnhandledPromiseRejectionWarning is raised.
@@ -117,7 +147,7 @@ async function search_peer_directory(friend_hash) {
     // The secretMessage should contain the shared-secret encrpyted with my public key.
     // TODO: decrypt this secret message using my private key.
 
-    console.log(secretMessage);
+    console.log(privkey.decrypt(secretMessage));
 }
 
 
@@ -144,9 +174,15 @@ search_peer_directory('QmTNuULgQPpZceebSr15XYFXwRZK7JYF1jjqhHzkGs1nvp').catch(()
 
 // To write a personal post for someone
 async function write_personal_post(friend_peerId, post, post_name) {
+    await _sodium.ready;
+    const sodium = _sodium;
 
-    //ENCRYPT THE POST WITH THE SHARED SECRET KEY
-    const encrypted_post = post; //for now just directly assigning 
+    //Get the shared key from key store;
+    symmetric_key = key_from_key_store;
+    nonce = get_from_local_store;
+
+    post_encoded = sodium.to_base64(post);
+    const encrypted_post =  sodium.crypto_secretbox_easy(post_encoded, nonce, symmetric_key); //for now just directly assigning 
 
     //We are working with only text files for now! 
     file_path = '/root_folder/' + friend_peerId + '/personal_post/' + post_name + '.txt';
@@ -165,12 +201,17 @@ async function write_personal_post(friend_peerId, post, post_name) {
  */
 
 async function read_personal_post(friend_hash) {
+    await _sodium.ready;
+    const sodium = _sodium;
 
     const node = await IPFS.create();
 
     // Getting our peerID
     const nodeDetails = await Promise.resolve(node.id());
     const myPeerId = nodeDetails.id;
+
+    symmetric_key = key_from_key_store;
+    nonce = get_from_local_store;
 
     // TODO: Query database for root_folder has for given friend_hash (received as function parameter)
     // and store it in rootHash. Hardcoded for now.
@@ -183,7 +224,10 @@ async function read_personal_post(friend_hash) {
         console.log(file);
         if (file.type == 0) {
             const buf = await node.files.read('/root_folder/QmQqUVUHvMLEf532sX638Q2RGmqXVg7c34K4BCAxvPBRHx/personal_post/' + file.name);
-            console.log(buf.toString('utf8'));
+            const encrypted_post = buf.toString('utf8');
+            post_buf = sodium.crypto_secretbox_open_easy(encrypted_post, nonce, sym_key);
+            post = Buffer.from(sodium.from_base64(post_buf)).toString();
+            console.log(post);
         }
 
     });
