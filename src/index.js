@@ -2,6 +2,7 @@
 
 const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
+const Orbit = require('orbit_')
 
 document.addEventListener('DOMContentLoaded', async() => {
     // const node = await IPFS.create({ repo: String(Math.random() + Date.now()) })
@@ -11,6 +12,10 @@ document.addEventListener('DOMContentLoaded', async() => {
     // Create OrbitDB instance
     const orbitdb = await OrbitDB.createInstance(node)
     const db = await orbitdb.docs('user_database', { indexBy: 'peerID' })
+
+    const orbit = new Orbit(node)
+
+    let friend_multiaddr_list = []
 
     async function create_root_folder() {
 
@@ -62,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     }
 
     async function store() {
-        const peerInfos = await node.swarm.peers();
+        const peerInfos = await node.swarm.addrs();
         console.log(peerInfos);
 
         const toStore = document.getElementById('source').value
@@ -104,6 +109,9 @@ document.addEventListener('DOMContentLoaded', async() => {
         const res = await node.bootstrap.add(friend_address)  // Check for errors?
         console.log(res.Peers)
 
+        // Also store the friend's multiaddr
+        friend_multiaddr_list.push(friend_address)
+
         // Next create the folder for the friend and add hello message.
         const directory = '/root_folder/' + friend_peerID;
 
@@ -133,15 +141,6 @@ document.addEventListener('DOMContentLoaded', async() => {
         const fileBuffer = await node.cat(files_added[0].hash)
         console.log('Contents of Hello message file:', fileBuffer.toString())
     }
-
-
-    /* const inputElement = document.getElementById("input");
-      inputElement.addEventListener("change", handleFiles, false);
-      function handleFiles() {
-      const fileList = this.files; /* now you can work with the file list 
-      console.log(fileList)
-      }
-    */
     
     // Search in a peer's directory for your records. Run the create_friend_directory first,
     // so that the peer has been added to your bootstrap list and you are connected to them.
@@ -177,12 +176,80 @@ document.addEventListener('DOMContentLoaded', async() => {
         console.log(secretMessage);
     }
 
+    async function open_chat () {
 
+        /** 
+         * First, check for online and offline friends. This is done by
+         * checking the list of our friend multiaddresses, 
+         * and checking if each friend is present in our swarm peers.
+         * Ideally should be repeated periodically
+         * */ 
+
+        // Get the swarm addrs
+        const swarm_addresses = await node.swarm.addrs()
+
+        /**
+         * Two ways of checking for online/offline friends:
+         * 1. For each multiaddr in friend_multiaddr_list, loop through
+         *    the entire list of swarm peers and check if the multiaddr is present.
+         * 2. For each multiaddr in friend_multiaddr_list, swarm connect to 
+         *    that address, and check the response. This'll be slower than looping 
+         *    through the bootstrap list, which won't usually get larger than hundreds of lines
+        */
+
+        let offline_friends = []
+        let online_friends = []
+
+        for (const friend_multiaddr of friend_multiaddr_list) {
+            flag = 0
+            for (const swarm_address of swarm_addresses) {
+                if(swarm_address['multiaddrs']['_multiaddrs']['0'].toString() == multiaddr) {
+                    online_friends.append(friend_multiaddr)
+                    flag = 1
+                    break
+                }
+            }
+
+            if(!flag) {
+                offline_friends.append(friend_multiaddr)
+            }
+        }
+
+        // Display list of online and offline friends
+        document.getElementById('offline_friends').innerText = offline_friends
+        document.getElementById('online_friends').innerText = online_friends
+        document.getElementById('chat').setAttribute('style', 'display: block')
+
+        // Joining orbit chat
+
+        const username = 'krithik'
+        const channel = 'HelloWorld'
+
+        orbit.events.on('connected', () => {
+            console.log('-!- Orbit Chat connected')
+            orbit.join(channel)
+        })
+
+        orbit.events.on('joined', channelName => {
+            orbit.send(channelName, '/me is now caching this channel')
+            console.log(`-!- Joined #${channelName}`)
+        })
+
+        // Listen for new messages
+        orbit.events.on('entry', (entry, channelName) => {
+            const post = entry.payload.value
+            console.log(`[${post.meta.ts}] &lt;${post.meta.from.name}&gt; ${post.content}`)
+        })
+
+        // Connect to Orbit network
+        sorbit.connect(username).catch(e => console.error(e))
+    }
+    
     document.getElementById('create_root_folder').onclick = create_root_folder  
     document.getElementById('add_details_to_DB').onclick = add_details_to_DB  
     document.getElementById('store').onclick = store
     document.getElementById('data_to_public_profile').onclick = add_data_to_public_profile
     document.getElementById('create_friend_directory').onclick = create_friend_directory
     document.getElementById('search_peer_directory').onclick = search_peer_directory
-
+    document.getElementById('open_chat').onclick = open_chat
 })
