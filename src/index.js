@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         console.log('Contents of Hello message file:', fileBuffer.toString())
     }
 
+
     /* const inputElement = document.getElementById("input");
       inputElement.addEventListener("change", handleFiles, false);
       function handleFiles() {
@@ -141,11 +142,47 @@ document.addEventListener('DOMContentLoaded', async() => {
       console.log(fileList)
       }
     */
+    
+    // Search in a peer's directory for your records. Run the create_friend_directory first,
+    // so that the peer has been added to your bootstrap list and you are connected to them.
+    async function search_peer_directory () {
+
+        const peer_peerID = document.getElementById('peer_peerID').value
+
+        // Getting our peerID
+        const nodeDetails = await Promise.resolve(node.id());
+        const myPeerId = nodeDetails.id;
+
+        // Querying database for this peer's root folder hash
+        const profile = await db.get(peer_peerID)
+        const root_hash = profile['0']['root_hash']
+
+        // Full IPFS path of the hello message
+        const helloMessagePath = '/ipfs/' + root_hash + '/' + myPeerId + '/hello.txt';
+
+        // Read the contents of the Hello message, if it exists.
+        const secretMessage = (await node.files.read(helloMessagePath)).toString('utf8')
+        .catch((err) => {
+            console.log('Either\n1. the peer node isn\'t online')
+            console.log('2. Peer node is online but you are not connected to them')
+            console.log('3. Peer node has not set up their root folder')
+            console.log('4. The peer node has not created the directory for you')
+            return;
+        });
+
+        // The secretMessage should contain the shared-secret encrypted with my public key.
+        // TODO: decrypt this secret message using my private key. Then store this shared-secret
+        // in the keystore
+
+        console.log(secretMessage);
+    }
+
 
     document.getElementById('create_root_folder').onclick = create_root_folder  
     document.getElementById('add_details_to_DB').onclick = add_details_to_DB  
     document.getElementById('store').onclick = store
     document.getElementById('data_to_public_profile').onclick = add_data_to_public_profile
     document.getElementById('create_friend_directory').onclick = create_friend_directory
+    document.getElementById('search_peer_directory').onclick = search_peer_directory
 
 })
