@@ -4,9 +4,8 @@
   "description": "Bundle js-ipfs with Browserify",
   "main": "index.js",
   "scripts": {
-    "bundle": "browserify src/index.js > public/bundle.js",
-    "serve": "http-server public -a 127.0.0.1 -p 8888",
-    "start": "npm run bundle && npm run serve"
+    "bundle": "watchify src/index.js -o public/bundle.js -d -v & http-server public -a 127.0.0.1 -p 8888",
+    "start": "npm run bundle"
   },
   "keywords": [],
   "license": "MIT",
@@ -17,8 +16,11 @@
     "http-server": "~0.11.1",
     "ipfs": "0.40.0",
     "ipfs-repo": "0.30.1",
+    "libsodium-wrappers": "^0.7.6",
+    "node-rsa": "^1.0.7",
     "orbit-db": "0.23.1",
-    "orbit_": "0.2.0-rc1"
+    "orbit_": "0.2.0-rc1",
+    "watchify": "^3.11.1"
   },
   "dependencies": {},
   "browser": {
