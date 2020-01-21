@@ -24,7 +24,7 @@ TODO
 * [Node.js](https://nodejs.org/en/)
 * [Orbit-DB](https://github.com/orbitdb/orbit-db)
 * [Orbit-Core](https://github.com/orbitdb/orbit-core)
-* [Browserify](http://browserify.org/)
+* [Browserify](http://browserify.org/) and [Watchify](https://www.npmjs.com/package/watchify)
 
 ## Setup
 

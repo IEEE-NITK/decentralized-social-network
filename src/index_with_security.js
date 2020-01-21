@@ -3,25 +3,20 @@
 const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
 const Orbit = require('orbit_')
+const NodeRSA = require('node-rsa');
+const _sodium = require('libsodium-wrappers');
 
 document.addEventListener('DOMContentLoaded', async() => {
     const node = await IPFS.create({ repo: 'ipfs_repository' })
     console.log('IPFS node is ready')
 
+    await _sodium.ready;
+    const sodium = _sodium;
+    console.log('libsodium initialized')
+
     // Create OrbitDB instance
     const orbitdb = await OrbitDB.createInstance(node)
-
-    const options = {
-        // Give write access to everyone
-        accessController: {
-            write: ['*'],
-        },
-        indexBy: 'peerID'
-    }
-
-      
-    const db = await orbitdb.docs('usee_database', options)
-    console.log(db.address.toString())
+    const db = await orbitdb.docs('user_database', { indexBy: 'username' })
 
     const orbit = new Orbit(node)
 
@@ -41,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         // Getting our peerID
         const nodeDetails = await Promise.resolve(node.id())
         const myPeerId = nodeDetails.id
-        console.log(myPeerId).
+        console.log(myPeerId)
 
     }
 
@@ -54,13 +49,11 @@ document.addEventListener('DOMContentLoaded', async() => {
         const root = await node.files.stat('/root_folder');
         console.log("root_folder hash:");
         console.log(root.hash);
-        
-        db.put({ '_id': 122, 'peerID': myPeerId, public_key: 'test', root_hash: 'test', address: 'IPFS_address', username: 'krithik' })
+
+        // Add our data to DB.
+        db.put({ '_id': 12, 'peerID': myPeerId, public_key: 'test', root_hash: 'test', address: 'IPFS_address', username: 'krithik' })
         .then(() => db.get(myPeerId))
         .then((value) => console.log(value))
-         
-        // Add our data to DB.
-        
     }
 
     async function add_data_to_public_profile() {
@@ -118,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         // const profile = await db.get(friend_peerID)
         // const friend_address = profile['0']['address']
 
-        const friend_address = '/p2p-circuit/ipfs/QmTG2NJ9tEGTzZZv33paKKFmx9ZJSYUzbuMKSriPmjhcTV'
+        const friend_address = '/p2p-circuit/ipfs/QmvxNtiyEWpYBwaFrzXcCXdu6wChC3KrMSp7SMqdrKY6VA'
 
         const res = await node.bootstrap.add(friend_address)  // Check for errors?
         console.log(res.Peers)
@@ -134,22 +127,29 @@ document.addEventListener('DOMContentLoaded', async() => {
             return;
         });
 
-        /** TODO: create a shared-secret key, which is then encrypted with the friend's public key.
-            Place this final output in the hello_message constant declared below. For now, it is 
-            hardcoded to be the friend's peerID.
-        */
+        //GENERATING SHARED SECRET KEY
+        symmetric_key = sodium.crypto_secretbox_keygen();
+        nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES); // new nonce for each encryptio
+        
+        // TODO: Get key from DB
+        const friend_public_key = {n:'something' , e:'something_else'}; 
+        const pubkey = new NodeRSA();
+        pubkey.importKey({
+            n: Buffer.from(friend_public_key.n, 'base64'),
+            e: Buffer.from(friend_public_key.e, 'base64'),
+        }, 'components-public');
 
         // Getting the friend's public key from the DB
         // console.log(profile['0']['public_key'])  // prints friend's public key
  
-        const hello_message = friend_peerID;  // Replace peerID with shared-secret
-
-        // TODO: encrypt above with friend's public key that we obtained
-        // For now storing unencrypted message
-        const final_message = hello_message;
+        const hello_message = friend_peerID + ' ' + symmetric_key + ' and ' + nonce;
         const file_path = '/root_folder/' + friend_peerID + '/hello.txt';
-        const files_added = await node.add({ path: file_path, content: final_message }); // This won't fail,
-                                                                                         // no need to catch err
+
+        // Encrypt hello message with friend's public key that we obtained
+        const final_messsage = pubkey.encrypt(hello_message);
+
+        const file_path = '/root_folder/' + friend_peerID + '/hello.txt';
+        const files_added = await node.add({ path: file_path, content: final_messsage });
 
         console.log('Created Hello message file: ', files_added[0].path, files_added[0].hash)
         const fileBuffer = await node.cat(files_added[0].hash)
@@ -170,6 +170,20 @@ document.addEventListener('DOMContentLoaded', async() => {
         const profile = await db.get(peer_peerID)
         const root_hash = profile['0']['root_hash']
 
+        // Getting my private key object from the keystore
+        const sk = get_private_key_object; // eslint-disable-line no-underscore-dangle
+        const privkey = new NodeRSA();
+        privkey.importKey({
+            n: Buffer.from(sk.n, 'base64'),
+            e: Buffer.from(sk.e, 'base64'),
+            d: Buffer.from(sk.d, 'base64'),
+            p: Buffer.from(sk.p, 'base64'),
+            q: Buffer.from(sk.q, 'base64'),
+            dmp1: Buffer.from(sk.dp, 'base64'),
+            dmq1: Buffer.from(sk.dq, 'base64'),
+            coeff: Buffer.from(sk.qi, 'base64'),
+        }, 'components');
+
         // Full IPFS path of the hello message
         const helloMessagePath = '/ipfs/' + root_hash + '/' + myPeerId + '/hello.txt';
 
@@ -187,7 +201,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         // TODO: decrypt this secret message using my private key. Then store this shared-secret
         // in the keystore
 
-        console.log(secretMessage);
+        console.log(privkey.decrypt(secretMessage));
     }
 
     async function open_chat () {
@@ -219,7 +233,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         for (const friend_multiaddr of friend_multiaddr_list) {
             let flag = 0
             for (const swarm_peer of swarm_peers) {
-                console.log(swarm_peer['addr']['buffer'].toString())  // Doesn't work correctly, need to fix
+                console.log(swarm_peer['addr']['buffer'].toString())  // Decoding this gives strange output
                 if(swarm_peer['addr']['buffer'].toString() == friend_multiaddr) {
                     online_friends.push(friend_multiaddr)
                     flag = 1
