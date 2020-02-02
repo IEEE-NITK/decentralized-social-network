@@ -26,18 +26,18 @@ document.addEventListener('DOMContentLoaded', async() => {
      * const db = await orbitdb.docs('uqsers_db', options)
      */
 
-    // Open connection to existing orbitDB database
-    const db = await orbitdb.open('/orbitdb/Qmd8TmZrWASypEp4Er9tgWP4kCNQnW4ncSnvjvyHQ3EVSU/first-database')
-    await db.load()  // load locally persisted data
-    
-    console.log('The address of the orbit-db is: ' + db.address.toString())
-
     const orbit = new Orbit(node)  // for orbit-chat
 
     let friend_multiaddr_list = []
 
     async function update_DB(new_root_hash) {
 
+        // Open connection to existing orbitDB database
+        const db = await orbitdb.open('/orbitdb/Qmd8TmZrWASypEp4Er9tgWP4kCNQnW4ncSnvjvyHQ3EVSU/first-database')
+        await db.load()  // load locally persisted data
+        
+        console.log('The address of the orbit-db is: ' + db.address.toString())
+        
         // Getting our peerID
         const nodeDetails = await Promise.resolve(node.id())
         const myPeerId = nodeDetails.id
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     // Creation of directory for the given friend and the Hello message.
     async function create_friend_directory() {
-        
+
         /**
          * Does two things:
          * 1. Adds the IPFS address of the peer to the bootstrap list
@@ -155,9 +155,13 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         const friend_peerID = document.getElementById('friend_peerID').value
         
+        /**
         const profile = await db.get(friend_peerID)
         const friend_address = profile['0']['address']
-
+         */
+        
+        const friend_address = '/p2p-circuit/ipfs/QmXqXZKMC5J6um1q8mQXuRB2L83FdFdr2MJEhbd4UDAdkG'
+        
         // First add friend to bootstrap list
         const res = await node.bootstrap.add(friend_address)  // Check for errors?
         console.log(res.Peers)
@@ -194,6 +198,15 @@ document.addEventListener('DOMContentLoaded', async() => {
         const fileBuffer = await node.cat(files_added[0].hash)
         console.log('Contents of Hello message file:', fileBuffer.toString())
 
+        // Open connection to existing orbitDB database
+        const db = await orbitdb.open('/orbitdb/Qmd8TmZrWASypEp4Er9tgWP4kCNQnW4ncSnvjvyHQ3EVSU/first-database')
+        await db.load()  // load locally persisted data
+        
+        console.log('The address of the orbit-db is: ' + db.address.toString())
+
+        const profile = await db.get('QmXqXZKMC5J6um1q8mQXuRB2L83FdFdr2MJEhbd4UDAdkG')
+        console.log(profile)
+        
         // Update root folder hash in the DB
         const root = await node.files.stat('/root_folder');
         await update_DB(root.hash)
