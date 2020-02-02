@@ -11,21 +11,48 @@ document.addEventListener('DOMContentLoaded', async() => {
     // Create OrbitDB instance
     const orbitdb = await OrbitDB.createInstance(node)
 
-    const options = {
-        // Give write access to everyone
-        accessController: {
-            write: ['*'],
-        },
-        indexBy: 'peerID'
-    }
+    /**
+     * Creating the orbit-db database:
+     * 
+     * const options = {
+     *  // Give write access to everyone
+     *  accessController: {
+     *     write: ['*'],
+     *  },
+     *  indexBy: 'peerID',
+     *  pin: true
+     * }
+     * 
+     * const db = await orbitdb.docs('uqsers_db', options)
+     */
 
-      
-    const db = await orbitdb.docs('usee_database', options)
-    console.log(db.address.toString())
+    // Open connection to existing orbitDB database
+    const db = await orbitdb.open('/orbitdb/Qmd8TmZrWASypEp4Er9tgWP4kCNQnW4ncSnvjvyHQ3EVSU/first-database')
+    await db.load()  // load locally persisted data
+    
+    console.log('The address of the orbit-db is: ' + db.address.toString())
 
-    const orbit = new Orbit(node)
+    const orbit = new Orbit(node)  // for orbit-chat
 
     let friend_multiaddr_list = []
+
+    async function update_DB(new_root_hash) {
+
+        // Getting our peerID
+        const nodeDetails = await Promise.resolve(node.id())
+        const myPeerId = nodeDetails.id
+
+        var record = await db.get(myPeerId)
+        record.root_hash = new_root_hash
+        
+        // Update the DB.
+        db.put(record)
+        .then(() => db.get(myPeerId))
+        .then((value) => {
+            console.log('The DB has been updated: ')
+            console.log(value)
+        })
+    }
 
     async function create_root_folder() {
 
@@ -41,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         // Getting our peerID
         const nodeDetails = await Promise.resolve(node.id())
         const myPeerId = nodeDetails.id
-        console.log(myPeerId).
+        console.log(myPeerId)
 
     }
 
@@ -55,12 +82,22 @@ document.addEventListener('DOMContentLoaded', async() => {
         console.log("root_folder hash:");
         console.log(root.hash);
         
-        db.put({ '_id': 122, 'peerID': myPeerId, public_key: 'test', root_hash: 'test', address: 'IPFS_address', username: 'krithik' })
+        /**
+         * To make sure Orbit-DB is fully replicated before user makes changes:
+         * https://github.com/orbitdb/orbit-db/blob/master/API.md#replicated
+        */
+
+        /**
+         * db.events.on('peer', (peer) => ... )
+         * Emitted when a new peer connects via ipfs pubsub. 
+         * peer is a string containing the id of the new peer
+         * https://github.com/orbitdb/orbit-db/blob/master/API.md#peer
+         */
+
+        // Add our data to DB.
+        db.put({ '_id': 223, 'peerID': myPeerId, public_key: 'test', root_hash: 'test', address: 'IPFS_address', username: 'krithik' })
         .then(() => db.get(myPeerId))
         .then((value) => console.log(value))
-         
-        // Add our data to DB.
-        
     }
 
     async function add_data_to_public_profile() {
@@ -76,6 +113,10 @@ document.addEventListener('DOMContentLoaded', async() => {
         console.log('Added file:', files_added[0].path, files_added[0].hash)
         const fileBuffer = await node.cat(files_added[0].hash)
         console.log('Added file contents:', fileBuffer.toString())
+
+        // Update root folder hash in the DB
+        const root = await node.files.stat('/root_folder');
+        await update_DB(root.hash)
     }
 
     async function store() {
@@ -114,12 +155,10 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         const friend_peerID = document.getElementById('friend_peerID').value
         
+        const profile = await db.get(friend_peerID)
+        const friend_address = profile['0']['address']
+
         // First add friend to bootstrap list
-        // const profile = await db.get(friend_peerID)
-        // const friend_address = profile['0']['address']
-
-        const friend_address = '/p2p-circuit/ipfs/QmTG2NJ9tEGTzZZv33paKKFmx9ZJSYUzbuMKSriPmjhcTV'
-
         const res = await node.bootstrap.add(friend_address)  // Check for errors?
         console.log(res.Peers)
 
@@ -154,6 +193,10 @@ document.addEventListener('DOMContentLoaded', async() => {
         console.log('Created Hello message file: ', files_added[0].path, files_added[0].hash)
         const fileBuffer = await node.cat(files_added[0].hash)
         console.log('Contents of Hello message file:', fileBuffer.toString())
+
+        // Update root folder hash in the DB
+        const root = await node.files.stat('/root_folder');
+        await update_DB(root.hash)
     }
     
     // Search in a peer's directory for your records. Run the create_friend_directory first,
@@ -188,6 +231,10 @@ document.addEventListener('DOMContentLoaded', async() => {
         // in the keystore
 
         console.log(secretMessage);
+
+        // Update root folder hash in the DB (currently not needed here)
+        const root = await node.files.stat('/root_folder');
+        await update_DB(root.hash)
     }
 
     async function open_chat () {
@@ -215,11 +262,11 @@ document.addEventListener('DOMContentLoaded', async() => {
         let offline_friends = []
         let online_friends = []
 
-        console.log(swarm_peers['2']['addr']['buffer'].toString())
+        console.log(swarm_peers['5'].addr.toString())
         for (const friend_multiaddr of friend_multiaddr_list) {
             let flag = 0
             for (const swarm_peer of swarm_peers) {
-                console.log(swarm_peer['addr']['buffer'].toString())  // Doesn't work correctly, need to fix
+                console.log(swarm_peer.addr.toString())
                 if(swarm_peer['addr']['buffer'].toString() == friend_multiaddr) {
                     online_friends.push(friend_multiaddr)
                     flag = 1
