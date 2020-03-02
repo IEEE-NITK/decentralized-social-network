@@ -1,72 +1,30 @@
 'use strict'
 
-const IPFS = require('ipfs')
-const OrbitDB = require('orbit-db')
-const Orbit = require('orbit_')
+const IPFS = require('ipfs');
+const OrbitDB = require('orbit-db');
+const Orbit = require('orbit_');
 
-const create_node = require('./create_node')
-const connect_to_DB = require('./connect_to_DB')
-const update_DB = require('./update_DB')
-
+const initialization = require('./initialization');
+const utils = require('./utils');
 
 document.addEventListener('DOMContentLoaded', async() => {
 
-    const node = await create_node.createNode(IPFS)
-    console.log('IPFS node is ready')
+    const node = await initialization.createNode(IPFS);
+    console.log('IPFS node is ready');
 
-    const friend_address = '/p2p-circuit/ipfs/QmTwBpcZs2GyuA3pGyQxoDTH8HPrCaZzMsw67KhjCLt1My'
-    // First add friend to bootstrap list
-    const res = await node.bootstrap.add(friend_address) // Check for errors?
+    initialization.createRootFolder(node);
+    console.log('Root folder check completed');
 
-    const orbit = new Orbit(node) // for orbit-chat
+    //const db = initialization.connectToDB(node, OrbitDB);
+    //console.log('Successfully connected to DB at address: ' + db.address.toString());
 
-    let friend_multiaddr_list = []
+    // Friend peer address list stored locally, on a flat file
+    let friend_multiaddr_list = initialization.loadFriendsList();
 
-    async function create_root_folder() {
+    const orbit_chat = initialization.connectToChat(node, Orbit);
+    console.log("Connected to orbit-chat");
 
-        await node.files.mkdir('/root_folder').catch((err) => {
-            console.log('Root folder already created!')
-        });
-        await node.files.mkdir('/root_folder/public_profile').catch((err) => {
-            console.log('Public profile already created!')
-        });
 
-        console.log('Root folder and public profile created succesfully!')
-
-        // Getting our peerID
-        const nodeDetails = await Promise.resolve(node.id())
-        const myPeerId = nodeDetails.id
-        console.log(myPeerId)
-
-    }
-
-    async function add_details_to_DB() {
-        // Getting our peerID
-        const nodeDetails = await Promise.resolve(node.id())
-        const myPeerId = nodeDetails.id
-
-        // Getting the hash of our root folder
-        const root = await node.files.stat('/root_folder');
-        console.log("root_folder hash:");
-        console.log(root.hash);
-
-        /**
-         * To make sure Orbit-DB is fully replicated before user makes changes:
-         * https://github.com/orbitdb/orbit-db/blob/master/API.md#replicated
-         */
-
-        /**
-         * db.events.on('peer', (peer) => ... )
-         * Emitted when a new peer connects via ipfs pubsub. 
-         * peer is a string containing the id of the new peer
-         * https://github.com/orbitdb/orbit-db/blob/master/API.md#peer
-         */
-
-        // Add our data to DB.
-        db.put({ '_id': 223, 'peerID': myPeerId, public_key: 'test', root_hash: 'test', address: 'IPFS_address', username: 'krithik' })
-            .then(() => db.get(myPeerId))
-            .then((value) => console.log(value))
-    }
 
     async function add_data_to_public_profile() {
         const filename = document.getElementById('filename').value
@@ -87,33 +45,13 @@ document.addEventListener('DOMContentLoaded', async() => {
         await update_DB(root.hash)
     }
 
-    async function store() {
-
-
-        const peerInfos = await node.swarm.addrs();
+    /**
+     *  const peerInfos = await node.swarm.addrs();
         console.log(peerInfos);
 
-        console.log(db.get('asdasd'))
+        console.log(db.get('a'))
         console.log(db.get(223))
-
-        const toStore = document.getElementById('source').value
-        const result = await node.add(toStore)
-
-        for (const file of result) {
-            if (file && file.hash) {
-                console.log('successfully stored', file.hash)
-                await display(file.hash)
-            }
-        }
-    }
-
-    async function display(hash) {
-        const data = await node.cat(hash)
-
-        document.getElementById('hash').innerText = hash
-        document.getElementById('content').innerText = data
-        document.getElementById('output').setAttribute('style', 'display: block')
-    }
+     */
 
     // Creation of directory for the given friend and the Hello message.
     async function create_friend_directory() {

@@ -1,5 +1,10 @@
 async function update_DB(node, orbitdb, new_root_hash) {
 
+    /**
+     * To make sure Orbit-DB is fully replicated before user makes changes:
+     * https://github.com/orbitdb/orbit-db/blob/master/API.md#replicated
+    */
+   
     // Open connection to existing orbitDB database
     const db = await orbitdb.open('/orbitdb/Qmd8TmZrWASypEp4Er9tgWP4kCNQnW4ncSnvjvyHQ3EVSU/first-database')
     await db.load() // load locally persisted data
