@@ -4,66 +4,23 @@ const IPFS = require('ipfs')
 const OrbitDB = require('orbit-db')
 const Orbit = require('orbit_')
 
+const create_node = require('./create_node')
+const connect_to_DB = require('./connect_to_DB')
+const update_DB = require('./update_DB')
+
+
 document.addEventListener('DOMContentLoaded', async() => {
-    const node = await IPFS.create()
+
+    const node = await create_node.createNode(IPFS)
     console.log('IPFS node is ready')
 
-    // Create OrbitDB instance
-    const orbitdb = await OrbitDB.createInstance(node)
-
-    /**
-     * Creating the orbit-db database:
-     * 
-     * const options = {
-     *  // Give write access to everyone
-     *  accessController: {
-     *     write: ['*'],
-     *  },
-     *  indexBy: 'peerID',
-     *  pin: true
-     * }
-     * 
-     * const db = await orbitdb.docs('uqsers_db', options)
-     */
-
     const friend_address = '/p2p-circuit/ipfs/QmTwBpcZs2GyuA3pGyQxoDTH8HPrCaZzMsw67KhjCLt1My'
-
     // First add friend to bootstrap list
     const res = await node.bootstrap.add(friend_address) // Check for errors?
-
-    const db = await orbitdb.open('/orbitdb/zdpuB2Gu6EgrD86FzKMYpKbaj8TdH9q4RgyEBKmawBeWtRVXT/users_db1')
-    await db.load() // load locally persisted data
-    console.log('The address of the orbit-db is: ' + db.address.toString())
-    console.log(db.get('c'))
-    console.log(db.get(22))
 
     const orbit = new Orbit(node) // for orbit-chat
 
     let friend_multiaddr_list = []
-
-    async function update_DB(new_root_hash) {
-
-        // Open connection to existing orbitDB database
-        const db = await orbitdb.open('/orbitdb/Qmd8TmZrWASypEp4Er9tgWP4kCNQnW4ncSnvjvyHQ3EVSU/first-database')
-        await db.load() // load locally persisted data
-
-        console.log('The address of the orbit-db is: ' + db.address.toString())
-
-        // Getting our peerID
-        const nodeDetails = await Promise.resolve(node.id())
-        const myPeerId = nodeDetails.id
-
-        var record = await db.get(myPeerId)
-        record.root_hash = new_root_hash
-
-        // Update the DB.
-        db.put(record)
-            .then(() => db.get(myPeerId))
-            .then((value) => {
-                console.log('The DB has been updated: ')
-                console.log(value)
-            })
-    }
 
     async function create_root_folder() {
 
