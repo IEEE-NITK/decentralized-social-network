@@ -1,6 +1,6 @@
 async function createNode(IPFS) {
 
-    const node = await IPFS.create();
+    const node = await IPFS.create({ repo: 'ipfs_repository' });
     return node;
 
 }
@@ -9,21 +9,23 @@ async function createRootFolder(node) {
 
     // Creates important files and folders for given node if not already created
 
-    await node.files.mkdir('/root_folder').catch((err) => {
-        // console.log('Root folder already created!')
+    let isCreated = false;
+
+    isCreated = await node.files.mkdir('/root_folder').catch((err) => {
+        console.log('Root folder already created!')
+        return true;
     });
 
-    await node.files.mkdir('/root_folder/public_profile').catch((err) => {
-        // console.log('Public profile already created!')
-    });
+    if(isCreated)
+        return false;
 
-    const files_added = await node.add({ path: '/root_folder/friends_list.txt', content: '' }).catch((err) => {
-        // console.log('Friends list is already present!');
-    });
+    await node.files.mkdir('/root_folder/public_profile');
+    await node.add({ path: '/root_folder/friends_list.txt', content: '' });
 
+    return true;
 }
 
-async function addDetailsToDB(node) {
+async function addDetailsToDB(node, db) {
 
     // Getting our peerID
     const nodeDetails = await Promise.resolve(node.id())
@@ -31,8 +33,6 @@ async function addDetailsToDB(node) {
 
     // Getting the hash of our root folder
     const root = await node.files.stat('/root_folder');
-    console.log("root_folder hash:");
-    console.log(root.hash);
 
     /**
      * To make sure Orbit-DB is fully replicated before user makes changes:
@@ -49,7 +49,6 @@ async function addDetailsToDB(node) {
     // Add our data to DB.
     db.put({ 'peerID': myPeerId, public_key: 'test', root_hash: root.hash, multiaddr: '/p2p-circuit/ipfs/' + myPeerId, 
             username: 'krithik' })
-        .then(() => console.log('Added/Updated record in DB'))
 }
 
 async function connectToDB(node, OrbitDB) {
@@ -96,11 +95,24 @@ async function connectToChat(node, Orbit) {
 
 }
 
-async function loadFriendsList() {
+async function loadFriendsList(node) {
 
-    let friend_list = []
+    const files_added = await node.add({ path: '/root_folder/friend_list.txt', content: '1\n2\n3' });
+    console.log('Created friends list file: ', files_added[0].path, files_added[0].hash);
 
+    // Getting the hash of our root folder
+    const root = await node.files.stat('/root_folder');
+    const root_hash = root.hash;
+    console.log(root_hash)
+    // Full IPFS path of the local friends list file
+    const friendsListPath = '/ipfs/' + root_hash + '/friend_list.txt';
 
+    const str = (await node.files.read(friendsListPath)).toString('utf8')
+    console.log('as')
+    console.log('the str is' + str);
+    const friend_list = str.split("\n");
+    console.log(friend_list)
+    
     return friend_list;
     
 }
@@ -108,6 +120,7 @@ async function loadFriendsList() {
 
 module.exports.createNode = createNode;
 module.exports.createRootFolder = createRootFolder;
+module.exports.addDetailsToDB = addDetailsToDB;
 module.exports.connectToDB = connectToDB;
 module.exports.createDB = createDB;
 module.exports.connectToChat = connectToChat;
