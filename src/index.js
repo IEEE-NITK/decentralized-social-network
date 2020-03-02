@@ -12,154 +12,49 @@ document.addEventListener('DOMContentLoaded', async() => {
     const node = await initialization.createNode(IPFS);
     console.log('IPFS node is ready');
 
-    initialization.createRootFolder(node);
+    const isNewProfile = await initialization.createRootFolder(node);
     console.log('Root folder check completed');
 
-    //const db = initialization.connectToDB(node, OrbitDB);
-    //console.log('Successfully connected to DB at address: ' + db.address.toString());
+    // Friend peer address list stored within root_folder, on a flat file
+    let friend_multiaddr_list = await initialization.loadFriendsList(node);
 
-    // Friend peer address list stored locally, on a flat file
-    let friend_multiaddr_list = initialization.loadFriendsList();
+    const db = await initialization.connectToDB(node, OrbitDB);
+    console.log('Successfully connected to DB at address: ' + db.address.toString());
 
-    const orbit_chat = initialization.connectToChat(node, Orbit);
-    console.log("Connected to orbit-chat");
+    if (isNewProfile) {
+        
+        await initialization.addDetailsToDB(node, db);
+        console.log('Added new user record in DB!');
 
-
-
-    async function add_data_to_public_profile() {
-        const filename = document.getElementById('filename').value
-        const filedata = document.getElementById('filedata').value
-
-        const files_added = await node.add({ path: '/root_folder/public_profile/' + filename, content: filedata }).catch((err) => {
-            console.log('Could not create file')
-            console.log(err)
-            return;
-        });
-
-        console.log('Added file:', files_added[0].path, files_added[0].hash)
-        const fileBuffer = await node.cat(files_added[0].hash)
-        console.log('Added file contents:', fileBuffer.toString())
-
-        // Update root folder hash in the DB
-        const root = await node.files.stat('/root_folder');
-        await update_DB(root.hash)
     }
 
-    /**
-     *  const peerInfos = await node.swarm.addrs();
-        console.log(peerInfos);
+    const orbit_chat = await initialization.connectToChat(node, Orbit);
+    console.log("Connected to orbit-chat");
+    
+    async function add_data_to_public_profile() {
 
-        console.log(db.get('a'))
-        console.log(db.get(223))
-     */
+        const filename = document.getElementById('filename').value;
+        const filedata = document.getElementById('filedata').value;
+        await utils.addDataToPublicProfile(node, filename, filedata);
 
-    // Creation of directory for the given friend and the Hello message.
+    }
+
     async function create_friend_directory() {
 
-        /**
-         * Does two things:
-         * 1. Adds the IPFS address of the peer to the bootstrap list
-         * 2. Creates a folder for the friend and adds the hello message
-         */
+        const friend_peerID = document.getElementById('friend_peerID').value;
+        await utils.createFriendDirectory(node, db, friend_peerID);
 
-        // TODO: Improve error handling
-
-        const friend_peerID = document.getElementById('friend_peerID').value
-
-        /**
-        const profile = await db.get(friend_peerID)
-        const friend_address = profile['0']['address']
-         */
-
-        const friend_address = '/p2p-circuit/ipfs/QmXqXZKMC5J6um1q8mQXuRB2L83FdFdr2MJEhbd4UDAdkG'
-
-        // First add friend to bootstrap list
-        const res = await node.bootstrap.add(friend_address) // Check for errors?
-        console.log(res.Peers)
-
-        // Also store the friend's multiaddr
-        friend_multiaddr_list.push(friend_address)
-
-        // Next create the folder for the friend and add hello message.
-        const directory = '/root_folder/' + friend_peerID;
-
-        await node.files.mkdir(directory).catch((err) => {
-            console.log("Directory for this friend has already been created!");
-            return;
-        });
-
-        /** TODO: create a shared-secret key, which is then encrypted with the friend's public key.
-            Place this final output in the hello_message constant declared below. For now, it is 
-            hardcoded to be the friend's peerID.
-        */
-
-        // Getting the friend's public key from the DB
-        // console.log(profile['0']['public_key'])  // prints friend's public key
-
-        const hello_message = friend_peerID; // Replace peerID with shared-secret
-
-        // TODO: encrypt above with friend's public key that we obtained
-        // For now storing unencrypted message
-        const final_message = hello_message;
-        const file_path = '/root_folder/' + friend_peerID + '/hello.txt';
-        const files_added = await node.add({ path: file_path, content: final_message }); // This won't fail,
-        // no need to catch err
-
-        console.log('Created Hello message file: ', files_added[0].path, files_added[0].hash)
-        const fileBuffer = await node.cat(files_added[0].hash)
-        console.log('Contents of Hello message file:', fileBuffer.toString())
-
-        // Open connection to existing orbitDB database
-        const db = await orbitdb.open('/orbitdb/Qmd8TmZrWASypEp4Er9tgWP4kCNQnW4ncSnvjvyHQ3EVSU/first-database')
-        await db.load() // load locally persisted data
-
-        console.log('The address of the orbit-db is: ' + db.address.toString())
-
-        const profile = await db.get('QmXqXZKMC5J6um1q8mQXuRB2L83FdFdr2MJEhbd4UDAdkG')
-        console.log(profile)
-
-        // Update root folder hash in the DB
-        const root = await node.files.stat('/root_folder');
-        await update_DB(root.hash)
     }
-
+    
     // Search in a peer's directory for your records. Run the create_friend_directory first,
-    // so that the peer has been added to your bootstrap list and you are connected to them.
+    // so that the peer has been added to your bootstrap list and you are connected to them. 
     async function search_peer_directory() {
 
-        const peer_peerID = document.getElementById('peer_peerID').value
-
-        // Getting our peerID
-        const nodeDetails = await Promise.resolve(node.id());
-        const myPeerId = nodeDetails.id;
-
-        // Querying database for this peer's root folder hash
-        const profile = await db.get(peer_peerID)
-        const root_hash = profile['0']['root_hash']
-
-        // Full IPFS path of the hello message
-        const helloMessagePath = '/ipfs/' + root_hash + '/' + myPeerId + '/hello.txt';
-
-        // Read the contents of the Hello message, if it exists.
-        const secretMessage = (await node.files.read(helloMessagePath)).toString('utf8')
-            .catch((err) => {
-                console.log('Either\n1. the peer node isn\'t online')
-                console.log('2. Peer node is online but you are not connected to them')
-                console.log('3. Peer node has not set up their root folder')
-                console.log('4. The peer node has not created the directory for you')
-                return;
-            });
-
-        // The secretMessage should contain the shared-secret encrypted with my public key.
-        // TODO: decrypt this secret message using my private key. Then store this shared-secret
-        // in the keystore
-
-        console.log(secretMessage);
-
-        // Update root folder hash in the DB (currently not needed here)
-        const root = await node.files.stat('/root_folder');
-        await update_DB(root.hash)
+        const peer_peerID = document.getElementById('peer_peerID').value;
+        await utils.searchPeerDirectory(node, db);
+        
     }
+
 
     async function open_chat() {
 
@@ -234,9 +129,6 @@ document.addEventListener('DOMContentLoaded', async() => {
         */
     }
 
-    document.getElementById('create_root_folder').onclick = create_root_folder
-    document.getElementById('add_details_to_DB').onclick = add_details_to_DB
-    document.getElementById('store').onclick = store
     document.getElementById('data_to_public_profile').onclick = add_data_to_public_profile
     document.getElementById('create_friend_directory').onclick = create_friend_directory
     document.getElementById('search_peer_directory').onclick = search_peer_directory
