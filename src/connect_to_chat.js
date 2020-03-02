@@ -1,3 +1,9 @@
+async function connectToChat(node, Orbit) {
+
+    const orbit = new Orbit(node);  // for orbit-chat
+    return orbit;
+}
+
 async function connectToDB(node, OrbitDB) {
 
     // Create OrbitDB instance
@@ -37,5 +43,6 @@ async function createDB(node, OrbitDB) {
     return db;
 }
 
+module.exports.createNode = createNode
 module.exports.connectToDB = connectToDB
 module.exports.createDB = createDB
