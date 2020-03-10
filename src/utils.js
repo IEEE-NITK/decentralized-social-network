@@ -1,3 +1,4 @@
+const mfs = require('ipfs-mfs');
 
 async function updateDB(node, db) {
     
@@ -32,7 +33,7 @@ async function addDataToPublicProfile(node, db, filename, filedata) {
     console.log('Added file to your public profile successfully! Hash of file: ', files_added[0].hash);
 
     // Update root folder hash in DB
-    await update_DB(node, db);
+    await updateDB(node, db);
 
 }
 
@@ -50,26 +51,26 @@ async function createFriendDirectory(node, db, friend_peerID) {
 
     // Get friend's p2p-circuit address from DB
     const profile = await db.get(friend_peerID)
+
+    if (!(profile && profile.length)) 
+    {   
+        console.log('Could not find friend\'s details in DB. Cannot add friend!');
+        return;
+    }
+    
     const friend_address = profile['0']['address']
 
     // First add friend to bootstrap list
     const res = await node.bootstrap.add(friend_address) // Check for errors?
     console.log(res.Peers)
 
-    // Also store the friend's multiaddr
-    friend_multiaddr_list.push(friend_address)
-
     // Next create the folder for the friend and add hello message.
     const directory = '/root_folder/' + friend_peerID;
 
-    let flag = false;
     await node.files.mkdir(directory).catch((err) => {
         console.log("Directory for this friend has already been created!");
-        falg = true;
-    });
-
-    if(flag)
         return;
+    });
 
     /** TODO: create a shared-secret key, which is then encrypted with the friend's public key.
         Place this final output in the hello_message constant declared below. For now, it is 
@@ -77,7 +78,7 @@ async function createFriendDirectory(node, db, friend_peerID) {
     */
 
     // Getting the friend's public key from the DB
-    console.log(profile['0']['public_key']);
+    // console.log(profile['0']['public_key']);
 
     const hello_message = friend_peerID; // Replace peerID with shared-secret
 
@@ -93,7 +94,7 @@ async function createFriendDirectory(node, db, friend_peerID) {
     console.log('Contents of Hello message file:', fileBuffer.toString())
 
     // Update root folder hash in the DB
-    await update_DB(node, db);
+    await updateDB(node, db);
 }
 
 // Search in a peer's directory for your records. Run the create_friend_directory first,
@@ -129,7 +130,7 @@ async function searchPeerDirectory(node, db) {
 
     // Update root folder hash in the DB (currently not needed here)
     const root = await node.files.stat('/root_folder');
-    await update_DB(root.hash)
+    await updateDB(root.hash)
 }
 
 

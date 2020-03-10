@@ -1,3 +1,5 @@
+const mfs = require('ipfs-mfs');
+
 async function createNode(IPFS) {
 
     const node = await IPFS.create({ repo: 'ipfs_repository' });
@@ -47,8 +49,7 @@ async function addDetailsToDB(node, db) {
      */
 
     // Add our data to DB.
-    db.put({ 'peerID': myPeerId, public_key: 'test', root_hash: root.hash, multiaddr: '/p2p-circuit/ipfs/' + myPeerId, 
-            username: 'krithik' })
+    db.put({ '_id': myPeerId, public_key: 'test', root_hash: root.hash, multiaddr: '/p2p-circuit/ipfs/' + myPeerId })
 }
 
 async function connectToDB(node, OrbitDB) {
@@ -69,6 +70,7 @@ async function connectToDB(node, OrbitDB) {
     return db;
 }
 
+// Create a new Orbit-DB database
 async function createDB(node, OrbitDB) {
 
     // TODO: error handling
@@ -95,26 +97,29 @@ async function connectToChat(node, Orbit) {
 
 }
 
-async function loadFriendsList(node) {
+async function loadFriendsList(node, isNewProfile) {
 
-    const files_added = await node.add({ path: '/root_folder/friend_list.txt', content: '1\n2\n3' });
-    console.log('Created friends list file: ', files_added[0].path, files_added[0].hash);
+    if(isNewProfile)
+    {
+        const files_added = await node.add({ path: '/root_folder/friend_list.txt', content: '' });
+        console.log('Created friends list file: ', files_added[0].path, files_added[0].hash);
+    }
 
     // Getting the hash of our root folder
     const root = await node.files.stat('/root_folder');
     const root_hash = root.hash;
-    console.log(root_hash)
+    console.log(root_hash);
+
     // Full IPFS path of the local friends list file
     const friendsListPath = '/ipfs/' + root_hash + '/friend_list.txt';
 
     const str = (await node.files.read(friendsListPath)).toString('utf8')
-    console.log('as')
-    console.log('the str is' + str);
+    console.log(str)
+
     const friend_list = str.split("\n");
-    console.log(friend_list)
     
     return friend_list;
-    
+
 }
 
 

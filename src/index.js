@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     console.log('Root folder check completed');
 
     // Friend peer address list stored within root_folder, on a flat file
-    let friend_multiaddr_list = await initialization.loadFriendsList(node);
+    let friend_multiaddr_list = await initialization.loadFriendsList(node, isNewProfile);
 
     const db = await initialization.connectToDB(node, OrbitDB);
     console.log('Successfully connected to DB at address: ' + db.address.toString());
@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     const orbit_chat = await initialization.connectToChat(node, Orbit);
     console.log("Connected to orbit-chat");
+
+    // Initialization phase over
     
     async function add_data_to_public_profile() {
 
