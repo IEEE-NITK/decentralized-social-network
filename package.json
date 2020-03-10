@@ -22,7 +22,9 @@
     "orbit_": "0.2.0-rc1",
     "watchify": "^3.11.1"
   },
-  "dependencies": {},
+  "dependencies": {
+    "ipfs-mfs": "^1.0.0"
+  },
   "browser": {
     "ipfs": "ipfs/dist"
   }

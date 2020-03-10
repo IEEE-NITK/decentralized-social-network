@@ -64,7 +64,12 @@ List of features ready and TODOs for future development
 * TODO
 
 To-do list:
-* TODO
+* Add the below to npm dependencies   
+npm install orbit-db ipfs  
+npm install --global babel-cli  
+npm install --global webpack  
+npm i ipfs-mfs  
+
 
 ## Inspiration
 https://courses.csail.mit.edu/6.857/2019/project/17-Foss-Pfeiffer-Woldu-Williams.pdf
