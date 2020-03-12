@@ -91,12 +91,16 @@ async function createFriendDirectory(node, db, friend_peerID) {
     // For now storing unencrypted message
     const final_message = hello_message;
     const file_path = '/root_folder/' + friend_peerID + '/hello.txt';
+
+    flag = false;
     await node.files.write(file_path, final_message, { create: true }).catch((err) => {
         // This error should never be encountered
         console.log('Unable to write hello message to file! Cannot add friend.');
         console.log(err)
-        return false;
+        flag = true;
     });
+
+    if (flag) return false;
 
     // Now add friend multiaddr to our /root_folder/friends_list.txt
     const friendsListPath = '/root_folder/friends_list.txt';
