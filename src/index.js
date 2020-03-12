@@ -3,6 +3,7 @@
 const IPFS = require('ipfs');
 const OrbitDB = require('orbit-db');
 const Orbit = require('orbit_');
+const multiaddr = require('multiaddr')
 
 const initialization = require('./initialization');
 const utils = require('./utils');
@@ -19,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     let friend_multiaddr_list = await initialization.loadFriendsList(node, isNewProfile);
 
     const db = await initialization.connectToDB(node, OrbitDB);
-    console.log('Successfully connected to DB at address: ' + db.address.toString());
+    console.log('Successfully connected to orbit-DB at address: ' + db.address.toString());
 
     if (isNewProfile) {
         
@@ -30,6 +31,10 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     const orbit_chat = await initialization.connectToChat(node, Orbit);
     console.log("Connected to orbit-chat");
+    
+    // Remove this later
+    const Root_hash = await node.files.stat('/root_folder');
+    console.log('Your root folder hash is: ' + Root_hash.hash)
 
     // Initialization phase over
     
@@ -44,8 +49,21 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function create_friend_directory() {
 
         const friend_peerID = document.getElementById('friend_peerID').value;
-        await utils.createFriendDirectory(node, db, friend_peerID);
+        const success = await utils.createFriendDirectory(node, db, friend_peerID);
 
+        if(success) {
+            friend_multiaddr_list.push('/p2p-circuit/ipfs/' + friend_peerID);
+        }
+
+        // TODO: Remove the below
+        const swarm_peers = await node.swarm.peers()
+        console.log(swarm_peers)
+
+        /**
+        const addr = multiaddr(friend_address)
+        await node.swarm.connect(addr)
+        */
+       
     }
     
     // Search in a peer's directory for your records. Run the create_friend_directory first,
@@ -83,7 +101,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         let offline_friends = []
         let online_friends = []
 
-        console.log(swarm_peers['5'].addr.toString())
+        // console.log(swarm_peers['5'].addr.toString())
         for (const friend_multiaddr of friend_multiaddr_list) {
             let flag = 0
             for (const swarm_peer of swarm_peers) {

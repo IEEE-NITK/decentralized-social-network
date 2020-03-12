@@ -69,6 +69,7 @@ npm install orbit-db ipfs
 npm install --global babel-cli  
 npm install --global webpack  
 npm i ipfs-mfs  
+npm i multiaddr
 
 
 ## Inspiration
