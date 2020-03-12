@@ -1,82 +1,169 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8"/>
-    <title>js-ipfs example</title>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decentralized Social Network</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body style="background-color: grey;">
+    <!-- Navbar -->
+    <div id='Navbar'>
+        <nav class="navbar navbar-expand-lg navbar-light bg-dark">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item active">
+                        <button id="profile-btn" style="margin-top: 20px; margin-right: 20px" class="btn btn-primary">Profile</button>
+                    </li>
+                    <li class="nav-item">
+                        <button id="friends-posts-btn" style="margin-top: 20px; margin-right: 20px" class="btn btn-primary">Friend Posts</button>
+                    </li>
+                    <li class="nav-item">
+                        <button id="group-posts-btn" style="margin-top: 20px; margin-right: 170px" class="btn btn-primary">Group Posts</button>
+                    </li>
+                    <li>
+                        <h1 id="title-header" style="margin-top: 25px; margin-right: 350px; color: blanchedalmond; font-size: 30px;" class="text-monospace">Decentralized Social Network</h1>
+                    </li>
+                    <li class="nav-item">
+                        <button id="start-a-chat-btn" style="margin-top: 20px" class="btn btn-primary">Start A Chat -></button>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Home Page -->
+    <div id='Home' style="font-size: 20px; margin-left: 15px;">
+        <p>Welcome to The Decentralized Social Network!</p><br>
+        <p>An application providing multiple benefits of a regular social networking website, but with the added benefits of lower latency and higher security provided by decentralization.</p><br>
+        <p>The various sections are:</p>
+        <ul>
+            <li>1) Profile: Where you manage your User Profile. Contains functionality to add friends and update your public profile that would be visible to all app users.</li>
+            <li>2) Friend Posts: Where you send posts to your friends and read theirs for you.</li>
+            <li>3) Groups: Where you can broadcast common messages to all your friends at once.</li>
+            <li>4) Go To Chat: Platform to chat with your friends.</li>
+        </ul>
+    </div>
+
+    <!-- Profile Page -->
+    <div id="Profile" style="display: none;">
+        <div class="form-group">
+            <label for="colFormLabelLg" class="col-sm-2 col-form-label col-form-label-lg" style="font-size: 30px;"><strong>Add A Friend</strong></label><br>
+            <p style="margin-left: 15px;"><strong>This allows you to add a friend. Simply paste their peer ID below.</strong></p>
+            <div class="col-sm-10">
+                <input id="add-friend-id" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter your friend's peer ID">
+            </div>
+            <button id="add-friend-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">Add Friend</button><br><br>
+        </div>
+
+        <div class="form-group">
+            <label for="colFormLabelLg" style="font-size: 30px; margin-left: 15px;"><strong>Add Data To Public Profile</strong></label><br>
+            <p style="margin-left: 15px;"><strong>This content shows on your public profile, which can be viewed by any user of the app.</strong></p>
+            <div class="col-sm-10">
+                <input id="profile-info" style="margin-bottom: 10px;" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter the profile info">
+            </div>
+            <div class="col-sm-10">
+                <input id="profile-filename" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter the filename to store it under">
+            </div>
+            <button id="save-to-profile-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">Save To Public Profile</button><br><br>
+        </div>
+    </div>
+
+    <!-- Friend Posts Page -->
+    <div id='Friend-Posts' style="display: none;">
+        <div class="form-group">
+            <label for="colFormLabelLg" class="col-form-label col-form-label-lg" style="font-size: 30px; margin-left: 15px;"><strong>Read Your Friend's Posts to You</strong></label><br>
+            <p style="margin-left: 15px;"><strong>This allows you to read the post assigned to you by your friend. Simply paste his peer ID below.</strong></p>
+            <div class="col-sm-10">
+                <input id="view-friend-posts-id" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter your friend's peer ID">
+            </div>
+            <button id="view-friend-posts-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">View Posts</button><br><br>
+        </div>
+
+        <div id="friend-posts-list" style="display: none;">
+            <ul>
+                <li>File 1</li>
+                <li>File 2</li>
+                <li>File 3</li>
+            </ul>
+        </div>
+
+        <div class="form-group">
+            <br><label for="colFormLabelLg" style="font-size: 30px; margin-left: 15px;"><strong>Write a Post to Your Friend</strong></label><br>
+            <p style="margin-left: 15px;"><strong>This allows you to write a post to your friend. Simply paste his peer ID below.</strong></p>
+            <div class="col-sm-10">
+                <input id="write-friend-post-id" style="margin-bottom: 10px;" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter your friend's peer ID">
+            </div>
+            <div class="col-sm-10">
+                <input id="write-friend-post-content" style="margin-bottom: 10px;" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter the content of the post">
+            </div>
+            <div class="col-sm-10">
+                <input id="write-friend-post-filename" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter the filename to store it under">
+            </div>
+            <button id="write-friend-post-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">Write the Post</button><br><br>
+        </div>
+    </div>
+
+    <!-- Group Posts Page -->
+    <div id='Group-Posts' style="display: none;">
+        <div class="form-group">
+            <label for="colFormLabelLg" class="col-form-label col-form-label-lg" style="font-size: 30px; margin-left: 15px;"><strong>Read Your Friend's Group Posts</strong></label><br>
+            <p style="margin-left: 15px;"><strong>This allows you to read your friend's group posts. Simply paste his peer ID below.</strong></p>
+            <div class="col-sm-10">
+                <input id="read-group-posts-id" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter your friend's peer ID">
+            </div>
+            <button id="view-group-posts-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">View Posts</button><br><br>
+        </div>
+
+        <div id="group-posts-list" style="display: none;">
+            <ul>
+                <li>File 1</li>
+                <li>File 2</li>
+                <li>File 3</li>
+            </ul>
+        </div>
+
+        <div class="form-group">
+            <label for="colFormLabelLg" style="font-size: 30px; margin-left: 15px;"><strong>Write a Group Post</strong></label><br>
+            <p style="margin-left: 15px;"><strong>This allows you to broadcast a group post that can be viewed by all your friends.</strong></p>
+            <div class="col-sm-10">
+                <input id="write-group-post-content" style="margin-bottom: 10px;" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter the content of the post">
+            </div>
+            <div class="col-sm-10">
+                <input id="write-group-post-filename" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter the filename to store it under">
+            </div>
+            <button id="write-group-post-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">Write the Post</button><br><br>
+        </div>
+    </div>
+
+    <!-- Chat -->
+    <div id='Chat' style="display: none;">
+        <div class="form-group">
+            <label for="colFormLabelLg" style="font-size: 30px; margin-left: 15px;"><strong>Connect to Chat</strong></label><br>
+            <p style="margin-left: 15px;"><strong>This allows you to connect to a channel name decided by you and your friend</strong></p>
+            <div class="col-sm-10">
+                <input id="chat-channel" style="margin-bottom: 10px;" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter the channel name to be used">
+            </div>
+            <button id="connect-to-channel-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">Connect to Channel</button><br><br>
+        </div>
+    </div>
+    <div id='Chat-Body' style="display: none;">
+        <p style="font-size: 30px; margin-left: 15px; margin-top: 15px;">You have connected to the requested channel! You may begin chatting below.</p>
+        <div id='Chat-Window' style="margin-left: 15px; width: 81.3%; height: 350px; justify-self: center; overflow-y: scroll; border: 2px solid rgba(0, 0, 0, 0.5);">
+            Hello<br>helloo<br>
+        </div>
+        <div class="col-sm-10">
+            <input id="chat-message" style="margin-top: 10px; margin-bottom: 10px;" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Type a message">
+        </div>
+        <button id="send-message-btn" style="margin-left: 15px;" class="btn btn-primary">Send Message</button><br><br>
+    </div>
     <script src="bundle.js"></script>
-    <style>
-      .content {
-        border: 1px solid black;
-        padding: 10px;
-        margin: 5px 0;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>JS IPFS - Add data to IPFS from the browser</h1>
-    <textarea id="source" placeholder="Enter some text here"></textarea>
-    <br>
-    <button id="store">Add text to ipfs</button>
-    <br><br>
-    <div id="output" style="display: none">
-      <div>found in ipfs:</div>
-      <div class="content" id="hash">[ipfs hash]</div>
-      <div class="content" id="content">[ipfs content]</div>
-    </div>
-    <br><br><br>
+    <script type="text/javascript" src="script.js"></script>
+</body>
 
-
-
-    <h2>Create root folder and public profile</h2>
-    <button id="create_root_folder">Create</button>
-    <br><br><br>
-
-    
-    <h2>Add your details to the DB</h2>
-    <button id="add_details_to_DB">Add</button>
-    <br><br><br>
-
-
-    
-    <h2>Create Directory for Friend</h2>
-
-    Friend's PeerID:<br>
-    <input type="text" name="friendpeerID" id="friend_peerID"/><br><br><br>
-    <button id="create_friend_directory">Create Directory</button>
-
-    <br><br>
-
-
-
-    <h2>Search peer's root folder for your directory</h2>
-
-    Peer's PeerID: <br>
-    <input type="text" id="peer_peerID"/><br><br>
-    <button id="search_peer_directory">Search</button>
-
-
-    
-    <h2>Add data to your public profile</h2>
-
-    File name:<br>
-    <input type="text" name="file_name" id="filename"/><br>
-    Data:<br>
-    <input type="text" name="file_data" id="filedata"/><br><br>
-    <button id="data_to_public_profile">Add data</button>
-
-
-    <h2>Chat with friends</h2>
-    <button id="open_chat">Activate Chat</button>
-    <br><br><br>
-
-    
-    <div id="chat" style="display: none">
-      <h3>Online Friends:</h3>
-      <div class="content" id="online_friends">[ipfs online_friends]</div>
-
-      <h3>Offline Friends:</h3>
-      <div class="content" id="offline_friends">[ipfs offline_friends]</div>
-    </div>
-
-  </body>
 </html>
+
+
