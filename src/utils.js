@@ -124,30 +124,40 @@ async function searchPeerDirectory(node, db) {
 
     // Querying database for this peer's root folder hash
     const profile = await db.get(peer_peerID)
+
+    if (!(profile && profile.length)) 
+    {   
+        console.log('Could not find friend\'s details in DB. Cannot add friend!');
+        return false;
+    }
+    
     const root_hash = profile['0']['root_hash']
 
     // Full IPFS path of the hello message
     const helloMessagePath = '/ipfs/' + root_hash + '/' + myPeerId + '/hello.txt';
 
     // Read the contents of the Hello message, if it exists.
+    let flag = false;
+    
     const secretMessage = (await node.files.read(helloMessagePath)).toString('utf8')
         .catch((err) => {
             console.log('Either\n1. the peer node isn\'t online')
             console.log('2. Peer node is online but you are not connected to them')
             console.log('3. Peer node has not set up their root folder')
             console.log('4. The peer node has not created the directory for you')
-            return;
+            flag = true;
         });
 
+    if (flag) return false;
+    
     // The secretMessage should contain the shared-secret encrypted with my public key.
     // TODO: decrypt this secret message using my private key. Then store this shared-secret
     // in the keystore
 
     console.log(secretMessage);
-
-    // Update root folder hash in the DB (currently not needed here)
-    const root = await node.files.stat('/root_folder');
-    await updateDB(root.hash)
+    
+    await updateDB(node, db);
+    return true;
 }
 
 
