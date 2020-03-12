@@ -101,17 +101,12 @@ async function loadFriendsList(node, isNewProfile) {
 
     if(isNewProfile)
     {
-        const files_added = await node.add({ path: '/root_folder/friend_list.txt', content: '' });
-        console.log('Created friends list file: ', files_added[0].path, files_added[0].hash);
+        const files_added = await node.files.write('/root_folder/friends_list.txt', Buffer.from(''), { create: true })
+        console.log('Created friends list file');
     }
 
-    // Getting the hash of our root folder
-    const root = await node.files.stat('/root_folder');
-    const root_hash = root.hash;
-    console.log(root_hash);
-
-    // Full IPFS path of the local friends list file
-    const friendsListPath = '/ipfs/' + root_hash + '/friend_list.txt';
+    // MFS path of the local friends list file
+    const friendsListPath = '/root_folder/friends_list.txt';
 
     const str = (await node.files.read(friendsListPath)).toString('utf8')
     console.log(str)

@@ -23,7 +23,8 @@
     "watchify": "^3.11.1"
   },
   "dependencies": {
-    "ipfs-mfs": "^1.0.0"
+    "ipfs-mfs": "^1.0.0",
+    "multiaddr": "^7.4.0"
   },
   "browser": {
     "ipfs": "ipfs/dist"
