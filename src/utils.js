@@ -26,13 +26,12 @@ async function updateDB(node, db) {
 
 async function addDataToPublicProfile(node, db, filename, filedata) {
 
-    const files_added = await node.add({ path: '/root_folder/public_profile/' + filename, content: filedata }).catch((err) => {
+    const files_added = await node.files.write('/root_folder/public/' + filename, filedata, { create: true }).catch((err) => {
         console.log('Could not create file in public profile! Error: ' + err);
-        console.log(err);
         return;
     });
 
-    console.log('Added file to your public profile successfully! Hash of file: ', files_added[0].hash);
+    console.log('Added file to your public profile successfully!');
 
     // Update root folder hash in DB
     await updateDB(node, db);

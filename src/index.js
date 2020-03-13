@@ -3,7 +3,7 @@
 const IPFS = require('ipfs');
 const OrbitDB = require('orbit-db');
 const Orbit = require('orbit_');
-const multiaddr = require('multiaddr')
+// const multiaddr = require('multiaddr')
 
 const initialization = require('./initialization');
 const utils = require('./utils');
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     }
 
-    const orbit_chat = await initialization.connectToChat(node, Orbit);
+    const orbit = await initialization.connectToChat(node, Orbit);
     console.log("Connected to orbit-chat");
     
     // Remove this later
@@ -54,6 +54,41 @@ document.addEventListener('DOMContentLoaded', async() => {
         await utils.addDataToPublicProfile(node, filename, info);
 
         alert("Public Profile Updated.");
+
+    }
+
+    async function read_public_posts () {
+
+        // Extract the contents of the submission
+        var friend_peer_id = document.getElementById("read-public-posts-id").value;
+
+        // Ensure the fields weren't empty on submission
+        if (!(friend_peer_id)) {
+            alert("Please enter all values before submitting.");
+            return;
+        }
+
+        // TODO: Move to utils
+
+        // THE FOLDER CONTAINING PUBLIC POSTS IS CALLED 'public'
+
+        let file_path = '/ipfs/' + friend_root_hash + '/public/';
+        const files = await node.files.ls(file_path);
+
+        files.forEach(async(file) => {
+
+            console.log(file);
+            if (file.type == 0) {
+
+                const buf = await node.files.read('/root_folder/public/' + file.name);
+
+                // TODO: add to HTML instead of console.log()
+                console.log(buf.toString('utf8'));
+            }
+
+        });
+
+        document.getElementById('public-posts-list').style.display = 'block';
 
     }
 
@@ -241,79 +276,115 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     async function open_chat() {
 
-        /** 
-         * First, check for online and offline friends. This is done by
-         * checking the list of our friend multiaddresses, 
-         * and checking if each friend is present in our swarm peers.
-         * Ideally should be repeated periodically
-         * */
+        // TODO: move to utils
+        var e = document.getElementById('Chat-Window');
 
-        // Get the swarm peers
-        const swarm_peers = await node.swarm.peers()
+        // Getting our peerID
+        const nodeDetails = await Promise.resolve(node.id());
+        const myPeerId = nodeDetails.id;
 
-        /**
-         * Two ways of checking for online/offline friends:
-         * 1. For each multiaddr in friend_multiaddr_list, loop through
-         *    the entire list of swarm peers and check if the multiaddr is present.
-         * 2. For each multiaddr in friend_multiaddr_list, swarm connect to 
-         *    that address, and check the response. This'll be slower than looping 
-         *    through the bootstrap list, which won't usually get larger than hundreds of lines
-         */
+        const username = myPeerId;
 
+        // Extract the contents of the submission
+        var channel = document.getElementById("chat-channel").value;
 
-        let offline_friends = []
-        let online_friends = []
-
-        // console.log(swarm_peers['5'].addr.toString())
-        for (const friend_multiaddr of friend_multiaddr_list) {
-            let flag = 0
-            for (const swarm_peer of swarm_peers) {
-                console.log(swarm_peer.addr.toString())
-                if (swarm_peer['addr']['buffer'].toString() == friend_multiaddr) {
-                    online_friends.push(friend_multiaddr)
-                    flag = 1
-                    break
-                }
-            }
-
-            if (!flag) {
-                offline_friends.push(friend_multiaddr)
-            }
+        // Ensure the fields weren't empty on submission
+        if (!(channel)) {
+            alert("Please enter all values before submitting.")
+            return;
         }
 
-        // Display list of online and offline friends
-        document.getElementById('offline_friends').innerText = offline_friends
-        document.getElementById('online_friends').innerText = online_friends
-        document.getElementById('chat').setAttribute('style', 'display: block')
+        // Connect to the channel and open the chat window
 
-        /** 
-        // Joining orbit chat
-        const username = 'krithik'
-        const channel = 'HelloWorld'
+        display("Chat-Body");
 
         orbit.events.on('connected', () => {
-            console.log('-!- Orbit Chat connected')
+            console.log(`Connected`)
             orbit.join(channel)
         })
 
-        orbit.events.on('joined', channelName => {
-            orbit.send(channelName, '/me is now caching this channel')
+        // After joining the joined message should come
+        orbit.events.on('joined', async channelName => {
+            
+            e.innerHTML += "Joined #" + channelName + "<br>"
             console.log(`-!- Joined #${channelName}`)
         })
 
-        // Listen for new messages
-        orbit.events.on('entry', (entry, channelName) => {
+        // LISTEN FOR MESSAGES
+        orbit.events.on('entry', (entry,channelName) => {
+
             const post = entry.payload.value
             console.log(`[${post.meta.ts}] &lt;${post.meta.from.name}&gt; ${post.content}`)
-        })
+            e.innerHTML += (`${post.meta.from.name}: ${post.content}` + "<br>")
 
-        // Connect to Orbit network
-        orbit.connect(username).catch(e => console.error(e))
-        */
+        });
+        
+        // SEND A MESSAGE EVERYTIME SEND BUTTON IS CLICKED
+        document.getElementById("send-message-btn").onclick = async() => {
+
+            // Extract the contents of the submission
+            var channel_message = document.getElementById("chat-message").value;
+            
+            // Ensure the fields weren't empty on submission
+            if (!(channel_message)) {
+                alert("Please enter a message!");
+                return;
+            }
+
+            await orbit.send(channel, channel_message)
+            // Send the message and display it on the window
+            alert("Message sent");
+
+        }
+        
+        orbit.connect(username).catch(e => console.error(e));
+
     }
 
-    document.getElementById('save-to-profile-btn').onclick = add_data_to_public_profile;
+    // TODO: add to utils
+    function display(idToBeDisplayed) {
+        document.getElementById('Home').style.display = 'none';
+        document.getElementById('Profile').style.display = 'none';
+        document.getElementById('Friend-Posts').style.display = 'none';
+        document.getElementById('Group-Posts').style.display = 'none';
+        document.getElementById('Chat').style.display = 'none';
+        document.getElementById('Chat-Body').style.display = 'none';
+    
+        document.getElementById(idToBeDisplayed).style.display = 'block';
+    }
+
+    // Display the Profile Page
+    document.getElementById("profile-btn").onclick = () => {
+
+        // Display the requested section
+        display("Profile");
+    }
+
+    // Display the Friend Posts Page
+    document.getElementById("friends-posts-btn").onclick = () => {
+
+        // Display the requested section
+        display("Friend-Posts");
+    }
+
+    // Display the Group Posts Page
+    document.getElementById("group-posts-btn").onclick = () => {
+
+        // Display the requested section
+        display("Group-Posts");
+    }
+
+    // Display Chat Page
+    document.getElementById("start-a-chat-btn").onclick = () => {
+
+        // Display the requested section
+        display("Chat");
+    }
+
     document.getElementById("add-friend-btn").onclick = create_friend_directory;
+    
+    document.getElementById('save-to-profile-btn').onclick = add_data_to_public_profile;
+    document.getElementById("read-public-posts-btn").onclick = read_public_posts;
 
     document.getElementById("write-friend-post-btn").onclick = write_personal_post;
     document.getElementById("view-friend-posts-btn").onclick = read_personal_post;
@@ -322,5 +393,6 @@ document.addEventListener('DOMContentLoaded', async() => {
     document.getElementById("view-group-posts-btn").onclick = read_group_post;
 
     // document.getElementById('search_peer_directory').onclick = search_peer_directory;
-    // document.getElementById('open_chat').onclick = open_chat;
+    document.getElementById('connect-to-channel-btn').onclick = open_chat;
+
 })
