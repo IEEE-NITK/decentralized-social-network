@@ -8,7 +8,7 @@ const multiaddr = require('multiaddr')
 document.addEventListener('DOMContentLoaded', async() => {
     const node = await IPFS.create()
     console.log('IPFS node is ready')
-
+    const orbit = new Orbit(node)
     // Create OrbitDB instance
     const orbitdb = await OrbitDB.createInstance(node)
 
@@ -221,84 +221,72 @@ document.addEventListener('DOMContentLoaded', async() => {
     //     const root = await node.files.stat('/root_folder');
     //     await update_DB(root.hash)
     // }
-
-    // async function open_chat() {
-
-    //     /** 
-    //      * First, check for online and offline friends. This is done by
-    //      * checking the list of our friend multiaddresses, 
-    //      * and checking if each friend is present in our swarm peers.
-    //      * Ideally should be repeated periodically
-    //      * */
-
-    //     // Get the swarm peers
-    //     // const swarm_peers = await node.swarm.peers()
-
-    //     // /**
-    //     //  * Two ways of checking for online/offline friends:
-    //     //  * 1. For each multiaddr in friend_multiaddr_list, loop through
-    //     //  *    the entire list of swarm peers and check if the multiaddr is present.
-    //     //  * 2. For each multiaddr in friend_multiaddr_list, swarm connect to 
-    //     //  *    that address, and check the response. This'll be slower than looping 
-    //     //  *    through the bootstrap list, which won't usually get larger than hundreds of lines
-    //     //  */
-
-
-    //     // let offline_friends = []
-    //     // let online_friends = []
-
-    //     // console.log(swarm_peers['5'].addr.toString())
-    //     // for (const friend_multiaddr of friend_multiaddr_list) {
-    //     //     let flag = 0
-    //     //     for (const swarm_peer of swarm_peers) {
-    //     //         console.log(swarm_peer.addr.toString())
-    //     //         if (swarm_peer['addr']['buffer'].toString() == friend_multiaddr) {
-    //     //             online_friends.push(friend_multiaddr)
-    //     //             flag = 1
-    //     //             break
-    //     //         }
-    //     //     }
-
-    //     //     if (!flag) {
-    //     //         offline_friends.push(friend_multiaddr)
-    //     //     }
-    //     // }
-
-    //     // // Display list of online and offline friends
-    //     // document.getElementById('offline_friends').innerText = offline_friends
-    //     // document.getElementById('online_friends').innerText = online_friends
-    //     // document.getElementById('chat').setAttribute('style', 'display: block')
-        
-    //     const orbit = new Orbit(node)
-    //     // Joining orbit chat
-    //     const username = 'krithik'
-    //     const channel = 'HelloWorld'
-
-    //     orbit.events.on('connected', () => {
-    //         console.log('-!- Orbit Chat connected')
-    //         orbit.join(channel)
-    //     })
-
-    //     orbit.events.on('joined', channelName => {
-    //         orbit.send(channelName, '/me is now caching this channel')
-    //         console.log(`-!- Joined #${channelName}`)
-    //     })
-
-    //     // Listen for new messages
-    //     orbit.events.on('entry', (entry, channelName) => {
-    //         const post = entry.payload.value
-    //         console.log(`[${post.meta.ts}] &lt;${post.meta.from.name}&gt; ${post.content}`)
-    //     })
-
-    //     // Connect to Orbit network
-    //     orbit.connect(username).catch(e => console.error(e))
-        
-    // }
-
-    // document.getElementById('profile-btn').onclick = create_root_folder
-    // document.getElementById('add_details_to_DB').onclick = add_details_to_DB
-    // document.getElementById('store').onclick = store
     
+    async function open_chat() {
+        var e = document.getElementById('Chat-Window')
+        const username = "ADITYA"
+        // Extract the contents of the submission
+        var channel = document.getElementById("chat-channel").value;
+        // Ensure the fields weren't empty on submission
+        if (!(channel)) {
+        alert("Please enter all values before submitting.")
+        return;
+        }
+        // Connect to the channel and open the chat window
+        display("Chat-Body");
+        orbit.events.on('connected', () => {
+            console.log(`Connected`)
+            orbit.join(channel)
+        })
+
+        // After joining the joined message should come
+        orbit.events.on('joined', async channelName => {
+            
+            e.innerHTML += "Joined #" + channelName + "<br>"
+            console.log(`-!- Joined #${channelName}`)
+        })
+
+        // LISTEN FOR MESSAGES
+        orbit.events.on('entry', (entry,channelName) => {
+            const post = entry.payload.value
+            console.log(`[${post.meta.ts}] &lt;${post.meta.from.name}&gt; ${post.content}`)
+            e.innerHTML += (`${post.meta.from.name}: ${post.content}` + "<br>")
+          })
+        
+        // SEND A MESSAGE EVERYTIME SEND BUTTON IS CLICKED
+        document.getElementById("send-message-btn").onclick = async() => {
+
+            // Extract the contents of the submission
+            var channel_message = document.getElementById("chat-message").value;
+            
+            // Ensure the fields weren't empty on submission
+            if (!(channel_message)) {
+                alert("Please enter all values before submitting.")
+                return;
+            }
+            await orbit.send(channel, channel_message)
+            // Send the message and display it on the window
+            alert("Message sent")
+        }
+        
+        orbit.connect(username).catch(e => console.error(e))
+    }
+
+    // Accept, send and display the typed message
+    // document.getElementById("send-message-btn").onclick = async(channelName) => {
+
+    //     // Extract the contents of the submission
+    //     var channel_message = document.getElementById("chat-message").value;
+        
+    //     // Ensure the fields weren't empty on submission
+    //     if (!(channel_message)) {
+    //         alert("Please enter all values before submitting.")
+    //         return;
+    //     }
+    //     await orbit.send(channelName, channel_message)
+    //     // Send the message and display it on the window
+    //     alert("Message sent")
+    // }
     document.getElementById("save-to-profile-btn").onclick = () => {
 
         // Extract the contents of the submission
@@ -317,8 +305,19 @@ document.addEventListener('DOMContentLoaded', async() => {
         alert("Public Profile Updated.");
     }    
 
+    function display(idToBeDisplayed) {
+        document.getElementById('Home').style.display = 'none';
+        document.getElementById('Profile').style.display = 'none';
+        document.getElementById('Friend-Posts').style.display = 'none';
+        document.getElementById('Group-Posts').style.display = 'none';
+        document.getElementById('Chat').style.display = 'none';
+        document.getElementById('Chat-Body').style.display = 'none';
+    
+        document.getElementById(idToBeDisplayed).style.display = 'block';
+    }
     
     document.getElementById('add-friend-btn').onclick = create_friend_directory
     // document.getElementById('search_peer_directory').onclick = search_peer_directory
-    // document.getElementById('open_chat').onclick = open_chat
+    document.getElementById('connect-to-channel-btn').onclick = open_chat
+    
 })
