@@ -70,13 +70,31 @@
             </div>
             <button id="save-to-profile-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">Save To Public Profile</button><br><br>
         </div>
+
+        <div class="form-group">
+            <label for="colFormLabelLg" class="col-form-label col-form-label-lg" style="font-size: 30px; margin-left: 15px;"><strong>Read a person's public profile content</strong></label><br>
+            <p style="margin-left: 15px;"><strong>This allows you to read the public posts of any user on the social network. Simply paste their peer ID below.</strong></p>
+            <div class="col-sm-10">
+                <input id="read-public-posts-id" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter the user's peer ID">
+            </div>
+            <button id="read-public-posts-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">View Posts</button><br><br>
+        </div>
+
+        <div id="public-posts-list" style="display: none;">
+            <ul>
+                <li>File 1</li>
+                <li>File 2</li>
+                <li>File 3</li>
+            </ul>
+        </div>
+
     </div>
 
     <!-- Friend Posts Page -->
     <div id='Friend-Posts' style="display: none;">
         <div class="form-group">
             <label for="colFormLabelLg" class="col-form-label col-form-label-lg" style="font-size: 30px; margin-left: 15px;"><strong>Read Your Friend's Posts to You</strong></label><br>
-            <p style="margin-left: 15px;"><strong>This allows you to read the post assigned to you by your friend. Simply paste his peer ID below.</strong></p>
+            <p style="margin-left: 15px;"><strong>This allows you to read the post assigned to you by your friend. Simply paste their peer ID below.</strong></p>
             <div class="col-sm-10">
                 <input id="view-friend-posts-id" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Enter your friend's peer ID">
             </div>
@@ -153,7 +171,7 @@
     <div id='Chat-Body' style="display: none;">
         <p style="font-size: 30px; margin-left: 15px; margin-top: 15px;">You have connected to the requested channel! You may begin chatting below.</p>
         <div id='Chat-Window' style="margin-left: 15px; width: 81.3%; height: 350px; justify-self: center; overflow-y: scroll; border: 2px solid rgba(0, 0, 0, 0.5);">
-            Hello<br>helloo<br>
+            
         </div>
         <div class="col-sm-10">
             <input id="chat-message" style="margin-top: 10px; margin-bottom: 10px;" type="email" class="form-control form-control-lg" id="colFormLabelLg" placeholder="Type a message">
@@ -161,7 +179,6 @@
         <button id="send-message-btn" style="margin-left: 15px;" class="btn btn-primary">Send Message</button><br><br>
     </div>
     <script src="bundle.js"></script>
-    <script type="text/javascript" src="script.js"></script>
 </body>
 
 </html>
