@@ -57,19 +57,22 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function read_public_posts () {
 
         // Extract the contents of the submission
-        var friend_peer_id = document.getElementById("read-public-posts-id").value;
+        var peer_peerID = document.getElementById("read-public-posts-id").value;
 
-        // Ensure the fields weren't empty on submission
-        if (!(friend_peer_id)) {
-            alert("Please enter all values before submitting.");
-            return;
+        // Querying database for this peer's root folder hash
+        const profile = await db.get(peer_peerID)
+
+        if (!(profile && profile.length)) 
+        {   
+            console.log('Could not find peer\'s details in orbit DB. Cannot read peer\'s public posts!');
+            return false;
         }
 
         // TODO: Move to utils
 
-        // THE FOLDER CONTAINING PUBLIC POSTS IS CALLED 'public'
+        // THE FOLDER CONTAINING PUBLIC POSTS IS CALLED 'public_profile'
 
-        let file_path = '/ipfs/' + friend_root_hash + '/public/';
+        let file_path = '/ipfs/' + profile[0].root_hash + '/public_profile/';
         const files = await node.files.ls(file_path);
 
         files.forEach(async(file) => {
@@ -77,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async() => {
             console.log(file);
             if (file.type == 0) {
 
-                const buf = await node.files.read('/root_folder/public/' + file.name);
+                const buf = await node.files.read('/root_folder/public_profile/' + file.name);
 
                 // TODO: add to HTML instead of console.log()
                 console.log(buf.toString('utf8'));
@@ -159,7 +162,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         // TODO: Move to utils
         
         // Querying database for this peer's root folder hash
-        const profile = await db.get(peer_peerID)
+        const profile = await db.get(friend_peer_id)
 
         if (!(profile && profile.length)) 
         {   
@@ -197,8 +200,8 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function write_group_post() {
         
         // Extract the contents of the submission
-        var group_post_content = document.getElementById("write-friend-post-content").value;
-        var group_post_filename = document.getElementById("write-friend-post-filename").value;
+        var group_post_content = document.getElementById("write-group-post-content").value;
+        var group_post_filename = document.getElementById("write-group-post-filename").value;
 
         // Ensure the fields weren't empty on submission
         if (!(group_post_content) || !(group_post_filename)) {
@@ -207,8 +210,17 @@ document.addEventListener('DOMContentLoaded', async() => {
         }
 
         // Place the post in the Group. TODO: Add to utils 
+
+        await node.files.mkdir('/root_folder/group/').catch((err) => {
+            // console.log('Group folder already created!')
+        });
+
         const file_path = '/root_folder/group/' + group_post_filename;
-        const file_added = await node.files.write(file_path, group_post_content, { create: true });
+        await node.files.write(file_path, Buffer.from(group_post_content), { create: true }).catch((err) => {
+
+            alert('Unable to create group post!' + err);
+    
+        });
 
         // Update root folder hash in the DB
         await utils.updateDB(node, db);
@@ -235,7 +247,11 @@ document.addEventListener('DOMContentLoaded', async() => {
         // THE FOLDER CONTAINING GROUP POSTS IS CALLED 'group'
 
         // Use the Group Key to decrypt the contents of the Group Posts
-        let file_path = '/ipfs/' + friend_root_hash + '/group/';
+
+        // Querying database for this peer's root folder hash
+        const profile = await db.get(friend_peer_id)
+
+        let file_path = '/ipfs/' + profile[0].root_hash + '/group/';
         const files = await node.files.ls(file_path);
 
         files.forEach(async(file) => {
@@ -342,15 +358,6 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     // Display the Profile Page
     document.getElementById("profile-btn").onclick = async () => {
-
-
-        // First add friend to bootstrap list
-        const res = await node.bootstrap.add('/p2p-circuit/ipfs/QmcXnegQgHFRfz2WHowqSXFeSaA6rtfpY7qd2dairo2raL');
-        console.log('Added friend to bootstrap list!');
-
-        // Remove
-        const peerInfos = await node.swarm.peers();
-        console.log(peerInfos);
 
         // Display the requested section
         display("Profile");
