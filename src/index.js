@@ -3,7 +3,7 @@
 const IPFS = require('ipfs');
 const OrbitDB = require('orbit-db');
 const Orbit = require('orbit_');
-// const multiaddr = require('multiaddr')
+const multiaddr = require('multiaddr')
 
 const initialization = require('./initialization');
 const utils = require('./utils');
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function create_friend_directory() {
 
         // Extract the contents of the submission
-        var friend_peer_id = document.getElementById("add-friend-id").value;
+        var friend_peer_id = document.getElementById("create-friend-directory-peer-id").value;
 
         // Ensure the fields weren't empty on submission
         if (!(friend_peer_id)) {
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function search_peer_directory() {
 
         const peer_peerID = document.getElementById('peer_peerID').value;
-        await utils.searchPeerDirectory(node, db);
+        await utils.searchPeerDirectory(node, db, peer_peerID, multiaddr);
         
     }
 
@@ -377,9 +377,8 @@ document.addEventListener('DOMContentLoaded', async() => {
         display("Chat");
     }
 
-    document.getElementById("home-btn").onclick = display_home;
-
-    document.getElementById("add-friend-btn").onclick = create_friend_directory;
+    document.getElementById("create-friend-directory-btn").onclick = create_friend_directory;
+    document.getElementById("search-peer-directory-btn").onclick = search_peer_directory;
 
     document.getElementById('save-to-profile-btn').onclick = add_data_to_public_profile;
     document.getElementById("read-public-posts-btn").onclick = read_public_posts;
@@ -390,7 +389,6 @@ document.addEventListener('DOMContentLoaded', async() => {
     document.getElementById("write-group-post-btn").onclick = write_group_post;
     document.getElementById("view-group-posts-btn").onclick = read_group_post;
 
-    // document.getElementById('search_peer_directory').onclick = search_peer_directory;
     document.getElementById('connect-to-channel-btn').onclick = open_chat;
 
 })
