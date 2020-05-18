@@ -128,7 +128,18 @@ async function createFriendDirectory(node, db, friend_peerID) {
 
 // Search in a peer's directory for your records. Run the create_friend_directory first,
 // so that the peer has been added to your bootstrap list and you are connected to them.
-async function searchPeerDirectory(node, db) {
+async function searchPeerDirectory(node, db, peer_peerID, multiaddr) {
+
+    // Check if the peer is already a friend.
+    let peer_address = '/p2p-circuit/ipfs/' + peer_peerID;
+    const bootstrap_list = await node.bootstrap.list()
+    for (var p2p_circuit_addr in bootstrap_list) {
+
+        if (p2p_circuit_addr == peer_address) {
+            console.log('This peer is already your friend!');
+            return false;
+        }
+    }
 
     // Getting our peerID
     const nodeDetails = await Promise.resolve(node.id());
@@ -139,10 +150,16 @@ async function searchPeerDirectory(node, db) {
 
     if (!(profile && profile.length)) 
     {   
-        console.log('Could not find friend\'s details in DB. Cannot add friend!');
+        console.log('Could not find friend\'s details in orbit DB. Cannot add friend!');
         return false;
     }
-    
+
+    // First add friend to bootstrap list
+    const friend_address = profile['0']['address']
+
+    await node.bootstrap.add(friend_address)
+    console.log ("Added friend to bootstrap list!");
+
     const root_hash = profile['0']['root_hash']
 
     // Full IPFS path of the hello message
@@ -160,7 +177,12 @@ async function searchPeerDirectory(node, db) {
             flag = true;
         });
 
-    if (flag) return false;
+    if (flag) {
+        const addr = multiaddr(friend_address);
+        await ipfs.bootstrap.rm (addr);
+        console.log ("Removed friend from bootstrap list!");
+        return false;
+    }
     
     // The secretMessage should contain the shared-secret encrypted with my public key.
     // TODO: decrypt this secret message using my private key. Then store this shared-secret
@@ -169,6 +191,7 @@ async function searchPeerDirectory(node, db) {
     console.log(secretMessage);
     
     await updateDB(node, db);
+
     return true;
 }
 

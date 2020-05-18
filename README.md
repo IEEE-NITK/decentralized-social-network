@@ -1,13 +1,18 @@
 # Decentralized Secure Social Network
 
 ## Table of contents
-* [General info](#general-info)
-* [Screenshots](#screenshots)
-* [Design](#design)
-* [Main Tools/Technologies](#main-tools/technologies)
-* [Setup](#setup)
-* [Features](#features)
-* [Inspiration](#inspiration)
+- [Decentralized Secure Social Network](#decentralized-secure-social-network)
+  - [Table of contents](#table-of-contents)
+  - [General Info](#general-info)
+  - [Screenshots](#screenshots)
+  - [Design](#design)
+  - [Main Tools/Technologies](#main-toolstechnologies)
+  - [Setup](#setup)
+    - [Starting the server](#starting-the-server)
+    - [Using the web-app](#using-the-web-app)
+  - [Features](#features)
+    - [TODO](#todo)
+  - [Inspiration](#inspiration)
 
 ## General Info
 This project aims to implement a Decentralized, Secure Social Network based on IPFS. There are numerous advantages of the decentralized approach - the user has the key to decrypt and modify their own data and hence have complete control over their data. They can grant and revoke control from third parties.  
@@ -61,15 +66,11 @@ Note the outputs in the console while using the website.
 
 ## Features
 List of features ready and TODOs for future development
-* TODO
 
-To-do list:
-* Add the below to npm dependencies   
-npm install orbit-db ipfs  
-npm install --global babel-cli  
-npm install --global webpack  
-npm i ipfs-mfs  
-npm i multiaddr
+
+### TODO
+- Fix orbitdb connectToDB() connection issue.
+- 
 
 
 ## Inspiration
