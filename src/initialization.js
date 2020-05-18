@@ -84,7 +84,7 @@ async function createDB(node, OrbitDB) {
         pin: true
     };
 
-    const db = await orbitdb.docs('users_db6', options);
+    const db = await orbitdb.docs('users_db9', options);
 
     return db;
 }
