@@ -25,13 +25,9 @@ async function updateDB(node, db) {
 
 async function addDataToPublicProfile(node, db, filename, filedata) {
 
-    await node.files.mkdir('/root_folder/public').catch((err) => {
-        // Do nothing
-    });
-
-
+  
     let flag = false;
-    await node.files.write('/root_folder/public/' + filename, Buffer.from(filedata), { create: true }).catch((err) => {
+    await node.files.write('/root_folder/public_profile/' + filename, Buffer.from(filedata), { create: true }).catch((err) => {
         alert('Could not create file in public profile! Error: ' + err);
         flag = true;
     });
