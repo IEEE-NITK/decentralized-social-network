@@ -9,18 +9,16 @@ async function updateDB(node, db) {
     const new_root_hash = await node.files.stat('/root_folder');
 
     let record = await db.get(myPeerId);
-    record.root_hash = new_root_hash.hash;
+    record[0].root_hash = new_root_hash.hash;
 
     console.log('New root folder hash is: ' + new_root_hash.hash);
 
     // Update the DB.
-    db.put(record)
+    db.put(record[0])
     .then(() => db.get(myPeerId))
     .then((value) => {
         console.log('The DB has been updated with the new root folder hash');
     });
-
-    console.log(record);
 
 }
 
