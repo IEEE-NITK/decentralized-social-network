@@ -9,25 +9,24 @@ const initialization = require('./initialization');
 const utils = require('./utils');
 
 document.addEventListener('DOMContentLoaded', async() => {
-
+    
     const node = await initialization.createNode(IPFS);
     console.log('IPFS node is ready');
 
     const isNewProfile = await initialization.createRootFolder(node);
     console.log('Root folder check completed');
 
+    // const res = await node.bootstrap.list()
+    // console.log(res.Peers)
+
     // Friend peer address list stored within root_folder, on a flat file
     let friend_multiaddr_list = await initialization.loadFriendsList(node, isNewProfile);
 
-    const db = await initialization.connectToDB(node, OrbitDB);
+    const db = await initialization.createDB(node, OrbitDB);
     console.log('Successfully connected to orbit-DB at address: ' + db.address.toString());
 
-    if (isNewProfile) {
-        
-        await initialization.addDetailsToDB(node, db);
-        console.log('Added new user record in DB!');
-
-    }
+    await initialization.addDetailsToDB(node, db);
+    console.log('Added new user record in DB!');
 
     const orbit = await initialization.connectToChat(node, Orbit);
     console.log("Connected to orbit-chat");
@@ -51,9 +50,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         }
     
         // Save the data to public profile
-        await utils.addDataToPublicProfile(node, filename, info);
-
-        alert("Public Profile Updated.");
+        await utils.addDataToPublicProfile(node, db, filename, info);
 
     }
 
@@ -140,25 +137,8 @@ document.addEventListener('DOMContentLoaded', async() => {
             alert("Please enter all values before submitting.");
             return;
         }
-
-        // Write the post. TODO: move to utils
-        let flag = false;
-        const file_path = '/root_folder/' + friend_peer_id + '/personal_post/' + friend_post_filename + '.txt';
-        await node.files.write(file_path, encrypted_post, { create: true }).catch((err) => {
-
-            alert('Unable to create personal post to friend!');
-            flag = true;
-
-        });
-    
-        if (flag) {
-            return;
-        }
-    
-        // Update root folder hash in the DB
-        await utils.updateDB(node, db);
-
-        alert("Personal post has been written");
+ 
+        await utils.writePersonalPost(node, db, friend_peer_id, friend_post_content, friend_post_filename);
     }
 
     async function read_personal_post() {
@@ -306,7 +286,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         // After joining the joined message should come
         orbit.events.on('joined', async channelName => {
             
-            e.innerHTML += "Joined #" + channelName + "<br>"
+            e.innerHTML += ">  Joined #" + channelName + "<br>"
             console.log(`-!- Joined #${channelName}`)
         })
 
@@ -315,7 +295,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
             const post = entry.payload.value
             console.log(`[${post.meta.ts}] &lt;${post.meta.from.name}&gt; ${post.content}`)
-            e.innerHTML += (`${post.meta.from.name}: ${post.content}` + "<br>")
+            e.innerHTML += ("> " + `${post.meta.from.name}: ${post.content}` + "<br>")
 
         });
         
@@ -353,8 +333,24 @@ document.addEventListener('DOMContentLoaded', async() => {
         document.getElementById(idToBeDisplayed).style.display = 'block';
     }
 
+    // Display the Home Page
+    document.getElementById("home-btn").onclick = () => {
+
+        // Display the requested section
+        display("Home");
+    }
+
     // Display the Profile Page
-    document.getElementById("profile-btn").onclick = () => {
+    document.getElementById("profile-btn").onclick = async () => {
+
+
+        // First add friend to bootstrap list
+        const res = await node.bootstrap.add('/p2p-circuit/ipfs/QmcXnegQgHFRfz2WHowqSXFeSaA6rtfpY7qd2dairo2raL');
+        console.log('Added friend to bootstrap list!');
+
+        // Remove
+        const peerInfos = await node.swarm.peers();
+        console.log(peerInfos);
 
         // Display the requested section
         display("Profile");
@@ -381,8 +377,10 @@ document.addEventListener('DOMContentLoaded', async() => {
         display("Chat");
     }
 
+    document.getElementById("home-btn").onclick = display_home;
+
     document.getElementById("add-friend-btn").onclick = create_friend_directory;
-    
+
     document.getElementById('save-to-profile-btn').onclick = add_data_to_public_profile;
     document.getElementById("read-public-posts-btn").onclick = read_public_posts;
 

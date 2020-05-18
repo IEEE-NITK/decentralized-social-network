@@ -1,4 +1,3 @@
-const mfs = require('ipfs-mfs');
 
 async function updateDB(node, db) {
     
@@ -11,7 +10,7 @@ async function updateDB(node, db) {
 
     let record = await db.get(myPeerId);
     record.root_hash = new_root_hash.hash;
-    
+
     console.log('New root folder hash is: ' + new_root_hash.hash);
 
     // Update the DB.
@@ -21,15 +20,25 @@ async function updateDB(node, db) {
         console.log('The DB has been updated with the new root folder hash');
     });
 
+    console.log(record);
+
 }
 
 
 async function addDataToPublicProfile(node, db, filename, filedata) {
 
-    const files_added = await node.files.write('/root_folder/public/' + filename, filedata, { create: true }).catch((err) => {
-        console.log('Could not create file in public profile! Error: ' + err);
-        return;
+    await node.files.mkdir('/root_folder/public').catch((err) => {
+        // Do nothing
     });
+
+
+    let flag = false;
+    await node.files.write('/root_folder/public/' + filename, Buffer.from(filedata), { create: true }).catch((err) => {
+        alert('Could not create file in public profile! Error: ' + err);
+        flag = true;
+    });
+
+    if (flag) return;
 
     console.log('Added file to your public profile successfully!');
 
@@ -163,8 +172,35 @@ async function searchPeerDirectory(node, db) {
     return true;
 }
 
+async function writePersonalPost (node, db, friend_peer_id, friend_post_content, friend_post_filename) {
+
+    await node.files.mkdir('/root_folder/' + friend_peer_id).catch((err) => {
+        console.log("Directory for this friend has already been created!");
+    });
+
+    await node.files.mkdir('/root_folder/' + friend_peer_id + '/personal_post');
+
+    // Write the post. TODO: move to utils
+    let flag = false;
+    const file_path = '/root_folder/' + friend_peer_id + '/personal_post/' + friend_post_filename + '.txt';
+    await node.files.write(file_path, Buffer.from(friend_post_content), { create: true }).catch((err) => {
+
+        alert('Unable to create personal post to friend!' + err);
+        flag = true;
+
+    });
+
+    if (flag) return;
+
+    // Update root folder hash in the DB
+    await updateDB(node, db);
+
+    alert("Personal post has been written");
+
+}
 
 module.exports.updateDB = updateDB;
 module.exports.addDataToPublicProfile = addDataToPublicProfile;
 module.exports.createFriendDirectory = createFriendDirectory;
 module.exports.searchPeerDirectory = searchPeerDirectory;
+module.exports.writePersonalPost = writePersonalPost;

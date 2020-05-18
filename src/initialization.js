@@ -1,4 +1,3 @@
-const mfs = require('ipfs-mfs');
 
 async function createNode(IPFS) {
 
@@ -81,11 +80,11 @@ async function createDB(node, OrbitDB) {
         accessController: {
             write: ['*'],
         },
-        indexBy: 'peerID',
+        // indexBy: 'peerID',
         pin: true
     };
 
-    const db = await orbitdb.docs('users_db', options);
+    const db = await orbitdb.docs('users_db6', options);
 
     return db;
 }
