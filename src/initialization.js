@@ -98,16 +98,21 @@ async function connectToChat(node, Orbit) {
 
 async function loadFriendsList(node, isNewProfile) {
 
-    if(isNewProfile)
-    {
-        const files_added = await node.files.write('/root_folder/friends_list.txt', Buffer.from(''), { create: true })
-        console.log('Created friends list file');
-    }
-
     // MFS path of the local friends list file
     const friendsListPath = '/root_folder/friends_list.txt';
 
-    const str = (await node.files.read(friendsListPath)).toString('utf8')
+    let flag = false;
+    await (node.files.read(friendsListPath)).catch((err) => {
+        console.log('Creating friends list file...');
+        flag = true;
+    });
+
+    if (flag) {
+        await node.files.write('/root_folder/friends_list.txt', Buffer.from(''), { create: true })
+        console.log('Created friends list file');
+    }
+
+    let str = (await node.files.read(friendsListPath)).toString('utf8')
     console.log(str)
 
     const friend_list = str.split("\n");
