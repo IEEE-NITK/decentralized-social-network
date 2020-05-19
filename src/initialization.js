@@ -48,7 +48,7 @@ async function addDetailsToDB(node, db) {
      */
 
     // Add our data to DB.
-    db.put({ '_id': myPeerId, public_key: 'test', root_hash: root.hash, multiaddr: '/p2p-circuit/ipfs/' + myPeerId })
+    await db.put({ '_id': myPeerId, public_key: 'test', root_hash: root.hash, multiaddr: '/p2p-circuit/ipfs/' + myPeerId })
 }
 
 async function connectToDB(node, OrbitDB) {
@@ -56,10 +56,25 @@ async function connectToDB(node, OrbitDB) {
     // Create OrbitDB instance
     const orbitdb = await OrbitDB.createInstance(node);
 
-    // Connect to the previously created users_db1
-    const db = await orbitdb.open('/orbitdb/zdpuB2Gu6EgrD86FzKMYpKbaj8TdH9q4RgyEBKmawBeWtRVXT/users_db1');
+    const options = {
+        // Give write access to everyone
+        accessController: {
+            write: ['*'],
+        },
+        // indexBy: 'peerID',
+        pin: true
+    };
+
+    // Create / Open a database
+    const db = await orbitdb.docs("users_database4", options);
+
     // Load locally persisted data
     await db.load();
+
+    // Listen for updates from peers
+    db.events.on("replicated", address => {
+        console.log(db.iterator({ limit: -1 }).collect());
+    });
 
     /**
      * To make sure Orbit-DB is fully replicated before user makes changes:

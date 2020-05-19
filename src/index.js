@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     // Friend peer address list stored within root_folder, on a flat file
     let friend_multiaddr_list = await initialization.loadFriendsList(node, isNewProfile);
 
-    const db = await initialization.createDB(node, OrbitDB);
+    const db = await initialization.connectToDB(node, OrbitDB);
     console.log('Successfully connected to orbit-DB at address: ' + db.address.toString());
 
     await initialization.addDetailsToDB(node, db);

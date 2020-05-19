@@ -135,8 +135,8 @@ async function searchPeerDirectory(node, db, peer_peerID, multiaddr) {
     // Check if the peer is already a friend.
     let peer_address = '/p2p-circuit/ipfs/' + peer_peerID;
     const bootstrap_list = await node.bootstrap.list()
-    for (var p2p_circuit_addr in bootstrap_list) {
-
+    for (let i = 0; i < bootstrap_list["Peers"].length; i++) {
+        let p2p_circuit_addr = bootstrap_list["Peers"][i];
         if (p2p_circuit_addr == peer_address) {
             console.log('This peer is already your friend!');
             return false;
@@ -202,10 +202,12 @@ async function searchPeerDirectory(node, db, peer_peerID, multiaddr) {
 async function writePersonalPost (node, db, friend_peer_id, friend_post_content, friend_post_filename) {
 
     await node.files.mkdir('/root_folder/' + friend_peer_id).catch((err) => {
-        console.log("Directory for this friend has already been created!");
+
     });
 
-    await node.files.mkdir('/root_folder/' + friend_peer_id + '/personal_post');
+    await node.files.mkdir('/root_folder/' + friend_peer_id + '/personal_post').catch((err) => {
+
+    });
 
     // Write the post. TODO: move to utils
     let flag = false;
