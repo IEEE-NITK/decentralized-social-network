@@ -297,14 +297,14 @@ document.addEventListener('DOMContentLoaded', async() => {
         orbit.events.on('connected', () => {
             console.log(`Connected`)
             orbit.join(channel)
-        })
+        });
 
         // After joining the joined message should come
         orbit.events.on('joined', async channelName => {
             
             e.innerHTML += ">  Joined #" + channelName + "<br>"
             console.log(`-!- Joined #${channelName}`)
-        })
+        });
 
         // LISTEN FOR MESSAGES
         orbit.events.on('entry', (entry,channelName) => {
@@ -345,6 +345,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         document.getElementById('Group-Posts').style.display = 'none';
         document.getElementById('Chat').style.display = 'none';
         document.getElementById('Chat-Body').style.display = 'none';
+        // document.getElementById('Online-Offline-Friends').style.display = 'none';
     
         document.getElementById(idToBeDisplayed).style.display = 'block';
     }
@@ -377,8 +378,57 @@ document.addEventListener('DOMContentLoaded', async() => {
         display("Group-Posts");
     }
 
+    async function display_online_offline_friends () {
+        /** 
+         * First, check for online and offline friends. This is done by
+         * checking the list of our friend multiaddresses, 
+         * and checking if each friend is present in our swarm peers.
+         * Ideally should be repeated periodically
+         * */
+       
+        // Get the swarm peers
+        const swarm_peers = await node.swarm.peers();
+
+        /**
+         * Two ways of checking for online/offline friends:
+         * 1. For each multiaddr in friend_multiaddr_list, loop through
+         *    the entire list of swarm peers and check if the multiaddr is present.
+         * 2. For each multiaddr in friend_multiaddr_list, swarm connect to 
+         *    that address, and check the response. This'll be slower than looping 
+         *    through the bootstrap list, which won't usually get larger than hundreds of lines
+         */
+
+
+        let offline_friends = "";
+        let online_friends = "";
+
+        // console.log(swarm_peers['5'].addr.toString())
+        for (const friend_multiaddr of friend_multiaddr_list) {
+            let flag = 0;
+            console.log (friend_multiaddr)
+            for (const swarm_peer of swarm_peers) {
+                if (swarm_peer['addr']['buffer'].toString() == friend_multiaddr) {
+                    online_friends = online_friends.concat(friend_multiaddr, '<br>');
+                    flag = 1;
+                    break;
+                }
+            }
+
+            if (flag == 0) {
+                offline_friends = offline_friends.concat(friend_multiaddr, '<br>');
+            }
+        }
+
+        // Display list of online and offline friends
+        document.getElementById('offline_friends').innerHTML = offline_friends;
+        document.getElementById('online_friends').innerHTML = online_friends;
+
+    }
+
     // Display Chat Page
     document.getElementById("start-a-chat-btn").onclick = () => {
+        
+        display_online_offline_friends ();
 
         // Display the requested section
         display("Chat");
