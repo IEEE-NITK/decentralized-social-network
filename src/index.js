@@ -170,6 +170,14 @@ document.addEventListener('DOMContentLoaded', async() => {
             return;
         }
 
+        let friend_address = '/p2p-circuit/ipfs/' + friend_peer_id;
+
+        // First add friend to bootstrap list
+        await node.bootstrap.add(friend_address)
+        console.log('Added friend to bootstrap list!');
+
+        await node.swarm.connect(friend_address);
+
         // TODO: this should perform search_peer_directory. If it fails, should perform
         // createFriendDirectory() 
         const success = await utils.createFriendDirectory(node, db, friend_peer_id);
@@ -453,6 +461,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         
         open_chat(typed_channel);
     }
+    
     async function read_group_post_prep()
     {
         var peerid = document.getElementById("read-group-posts-id").value;
@@ -467,7 +476,7 @@ document.addEventListener('DOMContentLoaded', async() => {
             
             if (file.type == 0) {
 
-                const buf = await node.files.read('/root_folder/group/' + file.name);
+                const buf = await node.files.read(file_path + '' + file.name);
                 e.innerHTML += ``
                 
                 // TODO: add to HTML instead of console.log()
