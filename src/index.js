@@ -40,9 +40,6 @@ document.addEventListener('DOMContentLoaded', async() => {
     const my_node_details = await Promise.resolve(node.id());
     const my_peer_id = my_node_details.id;
     document.getElementById('peer-id').innerText = my_peer_id;
-
-    document.getElementById("page").style.display = "block";
-    document.getElementById("loading").style.display = "none";
     
     async function add_data_to_public_profile() {
 
@@ -280,9 +277,15 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     async function open_chat(channel_name) {
 
+        try {
+            await orbit.disconnect();
+        }
+        catch(err) {
+            console.log (err);
+        }
+
         // TODO: move to utils
         var e = document.getElementById('Chat-Window');
-
 
         // Getting our peerID
         const nodeDetails = await Promise.resolve(node.id());
@@ -293,7 +296,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         // Extract the contents of the submission
         
         var channel = channel_name;
-
+        console.log (channel_name);
         // if secret_channel has a parameter then it has been called from clicks
         
         
@@ -421,14 +424,14 @@ document.addEventListener('DOMContentLoaded', async() => {
             console.log (friend_multiaddr)
             for (const swarm_peer of swarm_peers) {
                 if (swarm_peer['addr']['buffer'].toString() == friend_multiaddr) {
-                    online_friends = online_friends.concat(friend_multiaddr, '<br>');
+                    online_friends = online_friends.concat('<a href=\"\" onclick=\"return OpenChat(\'' + friend_multiaddr + '\');\">', friend_multiaddr, "</a><br>");
                     flag = 1;
                     break;
                 }
             }
 
             if (flag == 0) {
-                offline_friends = offline_friends.concat(friend_multiaddr, '<br>');
+                offline_friends = offline_friends.concat('<a href=\"\" onclick=\"return OpenChat(\'' + friend_multiaddr + '\');\">', friend_multiaddr, "</a><br>");
             }
         }
 
@@ -449,6 +452,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     function open_chat_prep()
     {
         var typed_channel = document.getElementById("chat-channel").value;
+        
         open_chat(typed_channel);
     }
 
@@ -465,5 +469,20 @@ document.addEventListener('DOMContentLoaded', async() => {
     document.getElementById("view-group-posts-btn").onclick = read_group_post;
 
     document.getElementById('connect-to-channel-btn').onclick = open_chat_prep;
+
+    window.OpenChat = function(multiaddr) {
+
+        let peer_peer_id = multiaddr.split('/')[3];
+
+        if (my_peer_id < peer_peer_id)
+            open_chat (my_peer_id + '' + peer_peer_id);
+        else
+            open_chat (peer_peer_id + '' + my_peer_id);
+
+        return false;
+    };
+
+    document.getElementById("page").style.display = "block";
+    document.getElementById("loading").style.display = "none";
 
 })
