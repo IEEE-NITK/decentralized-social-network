@@ -272,10 +272,11 @@ document.addEventListener('DOMContentLoaded', async() => {
         document.getElementById('group-posts-list').style.display = 'block';
     }
 
-    async function open_chat() {
+    async function open_chat(channel_name) {
 
         // TODO: move to utils
         var e = document.getElementById('Chat-Window');
+
 
         // Getting our peerID
         const nodeDetails = await Promise.resolve(node.id());
@@ -284,8 +285,12 @@ document.addEventListener('DOMContentLoaded', async() => {
         const username = myPeerId;
 
         // Extract the contents of the submission
-        var channel = document.getElementById("chat-channel").value;
+        
+        var channel = channel_name;
 
+        // if secret_channel has a parameter then it has been called from clicks
+        
+        
         // Ensure the fields weren't empty on submission
         if (!(channel)) {
             alert("Please enter all values before submitting.")
@@ -435,6 +440,11 @@ document.addEventListener('DOMContentLoaded', async() => {
         // Display the requested section
         display("Chat");
     }
+    function open_chat_prep()
+    {
+        var typed_channel = document.getElementById("chat-channel").value;
+        open_chat(typed_channel);
+    }
 
     document.getElementById("create-friend-directory-btn").onclick = create_friend_directory;
     document.getElementById("search-peer-directory-btn").onclick = search_peer_directory;
@@ -448,6 +458,6 @@ document.addEventListener('DOMContentLoaded', async() => {
     document.getElementById("write-group-post-btn").onclick = write_group_post;
     document.getElementById("view-group-posts-btn").onclick = read_group_post;
 
-    document.getElementById('connect-to-channel-btn').onclick = open_chat;
+    document.getElementById('connect-to-channel-btn').onclick = open_chat_prep;
 
 })
