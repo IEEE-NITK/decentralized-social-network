@@ -36,6 +36,8 @@ document.addEventListener('DOMContentLoaded', async() => {
     console.log('Your root folder hash is: ' + Root_hash.hash)
 
     // Initialization phase over
+    document.getElementById("page").style.display = "block";
+    document.getElementById("loading").style.display = "none";
     
     async function add_data_to_public_profile() {
 
