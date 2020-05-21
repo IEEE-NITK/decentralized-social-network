@@ -358,6 +358,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         document.getElementById('Group-Posts').style.display = 'none';
         document.getElementById('Chat').style.display = 'none';
         document.getElementById('Chat-Body').style.display = 'none';
+        document.getElementById('Wall-Posts').style.display = 'none';
         // document.getElementById('Online-Offline-Friends').style.display = 'none';
     
         document.getElementById(idToBeDisplayed).style.display = 'block';
@@ -368,6 +369,13 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         // Display the requested section
         display("Home");
+    }
+
+    //Display the wall
+    document.getElementById("wall-btn").onclick = () => {
+
+        // Display the requested section
+        display("Wall-Posts");
     }
 
     // Display the Profile Page
