@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', async() => {
     console.log('Your root folder hash is: ' + Root_hash.hash)
 
     // Initialization phase over
+
+    const my_node_details = await Promise.resolve(node.id());
+    const my_peer_id = my_node_details.id;
+    document.getElementById('peer-id').innerText = my_peer_id;
+
     document.getElementById("page").style.display = "block";
     document.getElementById("loading").style.display = "none";
     
@@ -52,7 +57,8 @@ document.addEventListener('DOMContentLoaded', async() => {
         }
     
         // Save the data to public profile
-        await utils.addDataToPublicProfile(node, db, filename, info);
+        let alert_data = await utils.addDataToPublicProfile(node, db, filename, info);
+        alert (alert_data);
 
     }
 
@@ -111,11 +117,11 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         if(success) {
             friend_multiaddr_list.push('/p2p-circuit/ipfs/' + friend_peer_id);
-            alert("Friend added.");
+            alert("Directory for peer" + friend_peer_id + " created!");
         }
 
         else {
-            alert("An error occured. Could not add friend.");
+            alert("An error occured. Could not create directory for peer" + friend_peer_id);
         }
 
     }
@@ -126,8 +132,8 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function search_peer_directory() {
 
         const peer_peerID = document.getElementById('peer_peerID').value;
-        await utils.searchPeerDirectory(node, db, peer_peerID, multiaddr);
-        
+        let alert_value = await utils.searchPeerDirectory(node, db, peer_peerID, multiaddr);
+        alert (alert_value);
     }
 
     async function write_personal_post() { 
@@ -228,7 +234,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         await utils.updateDB(node, db);
 
         // Write the post
-        alert("Group post has been written");
+        alert("Group post has been written!");
 
     }
 
