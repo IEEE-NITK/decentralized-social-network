@@ -35,11 +35,73 @@ document.addEventListener('DOMContentLoaded', async() => {
     const Root_hash = await node.files.stat('/root_folder');
     console.log('Your root folder hash is: ' + Root_hash.hash)
 
-    // Initialization phase over
+    // Initialize orbit chat. Connect to the orbit chat network.
 
-    const my_node_details = await Promise.resolve(node.id());
-    const my_peer_id = my_node_details.id;
+    // Getting our peerID
+    const nodeDetails = await Promise.resolve(node.id());
+    const my_peer_id = nodeDetails.id;
+
+    const username = my_peer_id;
+    let channel = "";
+    var e = document.getElementById('Chat-Window');
+
+    orbit.events.on('connected', () => {
+        console.log('Connected/Reconnected to orbit-chat network!');
+    });
+
+    // After joining the joined message should come
+    orbit.events.on('joined', async channelName => {
+            
+        e.innerHTML += ">  Joined #" + channelName + "<br>"
+        console.log(`-!- Joined #${channelName}`)
+    });
+    
+    // LISTEN FOR MESSAGES
+    orbit.events.on('entry', (entry,channelName) => {
+
+        const post = entry.payload.value
+        console.log(`[${post.meta.ts}] &lt;${post.meta.from.name}&gt; ${post.content}`)
+        e.innerHTML += ("> " + `${post.meta.from.name}: ${post.content}` + "<br>")
+
+    });
+    
+    // SEND A MESSAGE EVERYTIME SEND BUTTON IS CLICKED
+    window.SendMessage = async function () {
+
+        // Extract the contents of the submission
+        var channel_message = document.getElementById("chat-message").value;
+        
+        // Ensure the fields weren't empty on submission
+        if (!(channel_message)) {
+            alert("Please enter a message!");
+            return;
+        }
+
+        await orbit.send(channel, channel_message);
+
+        return false;
+    };
+
+    document.getElementById("disconnect-btn").onclick = async() => {
+
+        try {
+            await orbit.leave();
+            await orbit.disconnect();
+            await orbit.connect(username).catch(e => console.error(e));
+            alert ("Disconnected");
+            display("Chat");
+
+        }
+        catch(err) {
+            alert (err);
+        }
+    };
+
+    orbit.connect(username).catch(e => console.error(e));
+
     document.getElementById('peer-id').innerText = my_peer_id;
+
+    // Initialization phase over
     
     async function add_data_to_public_profile() {
 
@@ -277,28 +339,9 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     async function open_chat(channel_name) {
 
-        try {
-            await orbit.disconnect();
-        }
-        catch(err) {
-            console.log (err);
-        }
-
-        // TODO: move to utils
-        var e = document.getElementById('Chat-Window');
-
-        // Getting our peerID
-        const nodeDetails = await Promise.resolve(node.id());
-        const myPeerId = nodeDetails.id;
-
-        const username = myPeerId;
-
         // Extract the contents of the submission
-        
-        var channel = channel_name;
+        channel = channel_name;
         console.log (channel_name);
-        // if secret_channel has a parameter then it has been called from clicks
-        
         
         // Ensure the fields weren't empty on submission
         if (!(channel)) {
@@ -308,48 +351,12 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         // Connect to the channel and open the chat window
 
+        await orbit.join(channel);
         display("Chat-Body");
 
-        orbit.events.on('connected', () => {
-            console.log(`Connected`)
-            orbit.join(channel)
-        });
-
-        // After joining the joined message should come
-        orbit.events.on('joined', async channelName => {
-            
-            e.innerHTML += ">  Joined #" + channelName + "<br>"
-            console.log(`-!- Joined #${channelName}`)
-        });
-
-        // LISTEN FOR MESSAGES
-        orbit.events.on('entry', (entry,channelName) => {
-
-            const post = entry.payload.value
-            console.log(`[${post.meta.ts}] &lt;${post.meta.from.name}&gt; ${post.content}`)
-            e.innerHTML += ("> " + `${post.meta.from.name}: ${post.content}` + "<br>")
-
-        });
+        // orbit.events.on('connected', () => {
         
-        // SEND A MESSAGE EVERYTIME SEND BUTTON IS CLICKED
-        document.getElementById("send-message-btn").onclick = async() => {
-
-            // Extract the contents of the submission
-            var channel_message = document.getElementById("chat-message").value;
-            
-            // Ensure the fields weren't empty on submission
-            if (!(channel_message)) {
-                alert("Please enter a message!");
-                return;
-            }
-
-            await orbit.send(channel, channel_message)
-            // Send the message and display it on the window
-            alert("Message sent");
-
-        }
-        
-        orbit.connect(username).catch(e => console.error(e));
+        // });
 
     }
 
