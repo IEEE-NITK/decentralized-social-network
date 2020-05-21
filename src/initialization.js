@@ -71,10 +71,10 @@ async function connectToDB(node, OrbitDB) {
     // Load locally persisted data
     await db.load();
 
-    // Listen for updates from peers
-    db.events.on("replicated", address => {
-        console.log(db.iterator({ limit: -1 }).collect());
-    });
+    // // Listen for updates from peers
+    // db.events.on("replicated", address => {
+    //     console.log(db.iterator({ limit: -1 }).collect());
+    // });
 
     /**
      * To make sure Orbit-DB is fully replicated before user makes changes:
