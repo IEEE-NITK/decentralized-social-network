@@ -26,7 +26,7 @@ async function createRootFolder(node) {
     return true;
 }
 
-async function addDetailsToDB(node, db) {
+async function addDetailsToDB(node, db, username) {
 
     // Getting our peerID
     const nodeDetails = await Promise.resolve(node.id())
@@ -48,7 +48,7 @@ async function addDetailsToDB(node, db) {
      */
 
     // Add our data to DB.
-    await db.put({ '_id': myPeerId, public_key: 'test', root_hash: root.hash, multiaddr: '/p2p-circuit/ipfs/' + myPeerId })
+    await db.put({ '_id': myPeerId, public_key: 'test', root_hash: root.hash, multiaddr: '/p2p-circuit/ipfs/' + myPeerId, username: username })
 }
 
 async function connectToDB(node, OrbitDB) {
@@ -130,9 +130,9 @@ async function loadFriendsList(node, isNewProfile) {
     let str = (await node.files.read(friendsListPath)).toString('utf8')
     console.log(str)
 
-    const friend_list = str.split("\n");
+    let friend_list = str.split("\n");
     
-    return friend_list;
+    return friend_list.slice(0, -1);
 
 }
 

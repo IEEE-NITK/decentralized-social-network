@@ -158,10 +158,12 @@ async function searchPeerDirectory(node, db, peer_peerID, multiaddr) {
 
     // First add friend to bootstrap list
     const friend_address = profile['0']['multiaddr'];
-    const addr = multiaddr(friend_address);
 
-    await node.bootstrap.add(friend_address)
+    await node.bootstrap.add(friend_address);
     console.log ("Added friend to bootstrap list!");
+
+    // Try to connect to them
+    await node.swarm.connect(friend_address);
 
     const root_hash = profile['0']['root_hash']
 
@@ -201,6 +203,26 @@ async function searchPeerDirectory(node, db, peer_peerID, multiaddr) {
     // in the keystore
 
     console.log(secretMessage);
+
+    friend_multiaddr_list.push(friend_address);
+
+    const friendsListPath = '/root_folder/friends_list.txt';
+
+    flag = false;
+    await (node.files.read(friendsListPath)).catch((err) => {
+        console.log('Creating friends list file...');
+        flag = true;
+    });
+
+    if (flag) {
+        await node.files.write(friendsListPath, "", { create: true }); 
+    }
+
+    let str = (await node.files.read(friendsListPath)).toString('utf8');
+    str = str + '' + friend_address + '\n';
+
+    await node.files.rm('/root_folder/friends_list.txt');  // Not reqd
+    await node.files.write('/root_folder/friends_list.txt', Buffer.from(str), { create: true });
     
     await updateDB(node, db);
 

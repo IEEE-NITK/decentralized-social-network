@@ -16,6 +16,16 @@ document.addEventListener('DOMContentLoaded', async() => {
     const isNewProfile = await initialization.createRootFolder(node);
     console.log('Root folder check completed');
 
+    const usernamePath = '/root_folder/username.txt';
+
+    let username = "";
+    await node.files.read(usernamePath).catch(async (err) => {
+        username = prompt("Please enter a username", "Username");
+        await node.files.write(usernamePath, Buffer.from(username), { create: true }).catch((err) => {});
+    });
+
+    username = (await node.files.read(usernamePath)).toString('utf8');
+
     // const res = await node.bootstrap.list()
     // console.log(res.Peers)
 
@@ -25,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     const db = await initialization.connectToDB(node, OrbitDB);
     console.log('Successfully connected to orbit-DB at address: ' + db.address.toString());
 
-    await initialization.addDetailsToDB(node, db);
+    await initialization.addDetailsToDB(node, db, username);
     console.log('Added new user record in DB!');
 
     const orbit = await initialization.connectToChat(node, Orbit);
@@ -36,12 +46,12 @@ document.addEventListener('DOMContentLoaded', async() => {
     console.log('Your root folder hash is: ' + Root_hash.hash)
 
     // Initialize orbit chat. Connect to the orbit chat network.
-
+   
     // Getting our peerID
     const nodeDetails = await Promise.resolve(node.id());
     const my_peer_id = nodeDetails.id;
 
-    const username = my_peer_id;
+    const orbit_username = username;
     let channel = "";
     var e = document.getElementById('Chat-Window');
 
@@ -87,7 +97,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         try {
             await orbit.leave();
             await orbit.disconnect();
-            await orbit.connect(username).catch(e => console.error(e));
+            await orbit.connect(orbit_username).catch(e => console.error(e));
             alert ("Disconnected");
             display("Chat");
 
@@ -97,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         }
     };
 
-    orbit.connect(username).catch(e => console.error(e));
+    orbit.connect(orbit_username).catch(e => console.error(e));
 
     document.getElementById('peer-id').innerText = my_peer_id;
 
@@ -172,19 +182,47 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         let friend_address = '/p2p-circuit/ipfs/' + friend_peer_id;
 
-        // First add friend to bootstrap list
+        // First add friend to bootstrap list and attempt to connect to them.
         await node.bootstrap.add(friend_address)
         console.log('Added friend to bootstrap list!');
 
-        await node.swarm.connect(friend_address);
+        try {
+            await node.swarm.connect(friend_address);
+        }
+        catch (err) {
+
+        }
 
         // TODO: this should perform search_peer_directory. If it fails, should perform
         // createFriendDirectory() 
         const success = await utils.createFriendDirectory(node, db, friend_peer_id);
 
         if(success) {
-            friend_multiaddr_list.push('/p2p-circuit/ipfs/' + friend_peer_id);
-            alert("Directory for peer" + friend_peer_id + " created!");
+
+            let new_friend = '/p2p-circuit/ipfs/' + friend_peer_id;
+            friend_multiaddr_list.push(new_friend);
+
+            const friendsListPath = '/root_folder/friends_list.txt';
+
+            let flag = false;
+            await (node.files.read(friendsListPath)).catch((err) => {
+                console.log('Creating friends list file...');
+                flag = true;
+            });
+
+            if (flag) {
+                await node.files.write(friendsListPath, "", { create: true }); 
+            }
+
+            let str = (await node.files.read(friendsListPath)).toString('utf8');
+            str = str + '/p2p-circuit/ipfs/' + friend_peer_id + '\n';
+
+            await node.files.rm('/root_folder/friends_list.txt');  // Not reqd
+            await node.files.write('/root_folder/friends_list.txt', Buffer.from(str), { create: true });
+
+            // Update root folder hash in the DB
+            await utils.updateDB(node, db);
+            alert("Directory for peer " + friend_peer_id + " created!");
         }
 
         else {
@@ -427,17 +465,28 @@ document.addEventListener('DOMContentLoaded', async() => {
         // console.log(swarm_peers['5'].addr.toString())
         for (const friend_multiaddr of friend_multiaddr_list) {
             let flag = 0;
-            console.log (friend_multiaddr)
+            let friend_uname = "";
+
+            try {
+                let test = await db.get(friend_multiaddr.split('/')[3]);
+                friend_uname = test['0']['username'];
+            }
+            catch (err) {
+                friend_uname = friend_multiaddr;
+            }
+
             for (const swarm_peer of swarm_peers) {
+                
                 if (swarm_peer['addr']['buffer'].toString() == friend_multiaddr) {
-                    online_friends = online_friends.concat('<a href=\"\" onclick=\"return OpenChat(\'' + friend_multiaddr + '\');\">', friend_multiaddr, "</a><br>");
+                    online_friends = online_friends.concat('<a href=\"\" onclick=\"return OpenChat(\'' + friend_multiaddr + '\');\">', friend_uname, "</a><br>");
                     flag = 1;
                     break;
                 }
+
             }
 
             if (flag == 0) {
-                offline_friends = offline_friends.concat('<a href=\"\" onclick=\"return OpenChat(\'' + friend_multiaddr + '\');\">', friend_multiaddr, "</a><br>");
+                offline_friends = offline_friends.concat(friend_multiaddr, '<br>');
             }
         }
 
