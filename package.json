@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "bundle": "watchify src/index.js -o public/bundle.js -d -v & http-server public -a 127.0.0.1 -p 8888",
-    "start": "npm run bundle"
+    "start": "npm run bundle;"
   },
   "keywords": [],
   "license": "MIT",
