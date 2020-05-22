@@ -247,17 +247,17 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function write_personal_post() { 
 
         // Extract the contents of the submission
-        var friend_peer_id = document.getElementById("write-friend-post-id").value;
-        var friend_post_content = document.getElementById("write-friend-post-content").value;
-        var friend_post_filename = document.getElementById("write-friend-post-filename").value;
+        var friend_peer_id = document.getElementById("write-personal-post-id").value;
+        var personal_post_content = document.getElementById("write-personal-post-content").value;
+        var personal_post_filename = document.getElementById("write-personal-post-filename").value;
 
         // Ensure the fields weren't empty on submission
-        if (!(friend_peer_id) || !(friend_post_content) || !(friend_post_filename)) {
+        if (!(friend_peer_id) || !(personal_post_content) || !(personal_post_filename)) {
             alert("Please enter all values before submitting.");
             return;
         }
  
-        await utils.writePersonalPost(node, db, friend_peer_id, friend_post_content, friend_post_filename);
+        await utils.writePersonalPost(node, db, friend_peer_id, personal_post_content, personal_post_filename);
     }
 
     async function read_personal_post(peerid) {
@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         if (!(profile && profile.length)) 
         {   
-            console.log('Could not find friend\'s details in DB. Cannot add friend!');
+            console.log('Could not find friend\'s details in DB. Cannot read posts!');
             return false;
         }
         
@@ -294,29 +294,29 @@ document.addEventListener('DOMContentLoaded', async() => {
        
     }
     
-    // Function to write a post into the Group Posts
-    async function write_group_post() {
+    // Function to write a post into the Posts for friends
+    async function write_friend_post() {
         
         // Extract the contents of the submission
-        var group_post_content = document.getElementById("write-group-post-content").value;
-        var group_post_filename = document.getElementById("write-group-post-filename").value;
+        var friend_post_content = document.getElementById("write-friend-post-content").value;
+        var friend_post_filename = document.getElementById("write-friend-post-filename").value;
 
         // Ensure the fields weren't empty on submission
-        if (!(group_post_content) || !(group_post_filename)) {
+        if (!(friend_post_content) || !(friend_post_filename)) {
             alert("Please enter all values before submitting.");
             return;
         }
 
-        // Place the post in the Group. TODO: Add to utils 
+        // Place the post in the friend folder. TODO: Add to utils 
 
-        await node.files.mkdir('/root_folder/group/').catch((err) => {
-            // console.log('Group folder already created!')
+        await node.files.mkdir('/root_folder/friend/').catch((err) => {
+            // console.log('friend folder already created!')
         });
 
-        const file_path = '/root_folder/group/' + group_post_filename;
-        await node.files.write(file_path, Buffer.from(group_post_content), { create: true }).catch((err) => {
+        const file_path = '/root_folder/friend/' + friend_post_filename;
+        await node.files.write(file_path, Buffer.from(friend_post_content), { create: true }).catch((err) => {
 
-            alert('Unable to create group post!' + err);
+            alert('Unable to create friend post!' + err);
     
         });
 
@@ -324,12 +324,12 @@ document.addEventListener('DOMContentLoaded', async() => {
         await utils.updateDB(node, db);
 
         // Write the post
-        alert("Group post has been written!");
+        alert("Friend post has been written!");
 
     }
 
-    // Function to read the posts within the Group folder of a peerid
-    async function read_group_post(peerid) {
+    // Function to read the posts within the friend folder of a peerid
+    async function read_friend_post(peerid) {
 
         // Extract the contents of the submission
         var friend_peer_id = peerid;
@@ -342,14 +342,17 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         // TODO: Move to utils
 
-        // THE FOLDER CONTAINING GROUP POSTS IS CALLED 'group'
+        // THE FOLDER CONTAINING FRIEND POSTS IS CALLED 'friend'
 
-        // Use the Group Key to decrypt the contents of the Group Posts
+        // TODO: Use the friends Key to decrypt the contents of the friend Posts
 
         // Querying database for this peer's root folder hash
         const profile = await db.get(friend_peer_id)
 
-        let file_path = '/ipfs/' + profile[0].root_hash + '/group/';
+        if (!(profile && profile.length))
+            return null;
+
+        let file_path = '/ipfs/' + profile[0].root_hash + '/friend/';
         
         return file_path;
         // files.forEach(async(file) => {
@@ -357,7 +360,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         //     console.log(file);
         //     if (file.type == 0) {
 
-        //         const buf = await node.files.read('/root_folder/group/' + file.name);
+        //         const buf = await node.files.read('/root_folder/friend/' + file.name);
 
         //         // TODO: add to HTML instead of console.log()
         //         console.log(buf.toString('utf8'));
@@ -365,7 +368,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         // });
 
-        // document.getElementById('group-posts-list').style.display = 'block';
+        // document.getElementById('friend-posts-list').style.display = 'block';
     }
 
     async function open_chat(channel_name) {
@@ -395,8 +398,8 @@ document.addEventListener('DOMContentLoaded', async() => {
     function display(idToBeDisplayed) {
         document.getElementById('Home').style.display = 'none';
         document.getElementById('Profile').style.display = 'none';
+        document.getElementById('Personal-Posts').style.display = 'none';
         document.getElementById('Friend-Posts').style.display = 'none';
-        document.getElementById('Group-Posts').style.display = 'none';
         document.getElementById('Chat').style.display = 'none';
         document.getElementById('Chat-Body').style.display = 'none';
         document.getElementById('Wall-Posts').style.display = 'none';
@@ -412,11 +415,55 @@ document.addEventListener('DOMContentLoaded', async() => {
         display("Home");
     }
 
+    async function display_wall_posts ()
+    {
+
+        for (const friend_multiaddr of friend_multiaddr_list) {
+
+            let friend_peerid = friend_multiaddr.split('/')[3];
+
+            const file_path = await read_friend_post (friend_peerid);
+
+            if (!(file_path && file_path.length))
+            {
+                console.log ("No friend posts found for the given peer!");
+                continue;
+            }
+
+            
+        }
+
+        const files = await node.files.ls(file_path);
+    
+        var e = document.getElementById('friend-posts-list')
+        e.innerHTML = "<h3> POSTS <h3>";
+        files.forEach(async(file) => {
+
+            console.log(file);
+            
+            if (file.type == 0) {
+
+                const buf = await node.files.read(file_path + '' + file.name);
+                e.innerHTML += ``
+                
+                // TODO: add to HTML instead of console.log()
+                var post = buf.toString('utf8');
+                console.log(post);
+                e.innerHTML += ('<div style = "border:solid 2px"><h3>' + file.name + ':' + post + '</h3></div>');
+            }
+
+        });
+
+        document.getElementById('friend-posts-list').style.display = 'block';
+
+    }
+
     //Display the wall
     document.getElementById("wall-btn").onclick = () => {
 
         // Display the requested section
         // generate_wall(); will 
+        display_wall_posts ();
         display("Wall-Posts");
     }
 
@@ -428,17 +475,17 @@ document.addEventListener('DOMContentLoaded', async() => {
     }
 
     // Display the Friend Posts Page
-    document.getElementById("friends-posts-btn").onclick = () => {
+    document.getElementById("personal-posts-btn").onclick = () => {
+
+        // Display the requested section
+        display("Personal-Posts");
+    }
+
+    // Display the Friend Posts Page
+    document.getElementById("friend-posts-btn").onclick = () => {
 
         // Display the requested section
         display("Friend-Posts");
-    }
-
-    // Display the Group Posts Page
-    document.getElementById("group-posts-btn").onclick = () => {
-
-        // Display the requested section
-        display("Group-Posts");
     }
 
     async function display_online_offline_friends () {
@@ -514,9 +561,9 @@ document.addEventListener('DOMContentLoaded', async() => {
         open_chat(typed_channel);
     }
     
-    async function read_group_post_prep()
+    async function read_friend_post_prep()
     {
-        var peerid = document.getElementById("read-group-posts-id").value;
+        var peerid = document.getElementById("read-friend-posts-id").value;
 
         var flag = false;
         for (const friend_multiaddr of friend_multiaddr_list) {
@@ -532,10 +579,17 @@ document.addEventListener('DOMContentLoaded', async() => {
             return false;
         }
 
-        const file_path = await read_group_post(peerid);
+        const file_path = await read_friend_post(peerid);
+
+        if (!(file_path && file_path.length))
+        {
+            alert ("No friend posts found for the given peer!");
+            return false;
+        }
+
         const files = await node.files.ls(file_path);
         console.log(files);
-        var e = document.getElementById('group-posts-list')
+        var e = document.getElementById('friend-posts-list')
         e.innerHTML = "<h3> POSTS <h3>";
         files.forEach(async(file) => {
 
@@ -554,16 +608,16 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         });
 
-        document.getElementById('group-posts-list').style.display = 'block';
+        document.getElementById('friend-posts-list').style.display = 'block';
 
     }
 
     async function read_personal_post_prep()
     {
         
-        var peerid = document.getElementById("view-friend-posts-id").value;
+        var peerid = document.getElementById("view-personal-posts-id").value;
         const file_path = await read_personal_post(peerid);
-        var e = document.getElementById('friend-posts-list');
+        var e = document.getElementById('personal-posts-list');
         e.innerHTML = "<h3> POSTS <h3>";
 
         const files = await node.files.ls(file_path);
@@ -585,7 +639,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         });
 
         // Display the requested friend's posts list
-        document.getElementById('friend-posts-list').style.display = 'block';
+        document.getElementById('personal-posts-list').style.display = 'block';
     }
 
 
@@ -595,11 +649,11 @@ document.addEventListener('DOMContentLoaded', async() => {
     document.getElementById('save-to-profile-btn').onclick = add_data_to_public_profile;
     document.getElementById("read-public-posts-btn").onclick = read_public_posts;
 
-    document.getElementById("write-friend-post-btn").onclick = write_personal_post;
-    document.getElementById("view-friend-posts-btn").onclick = read_personal_post_prep;
+    document.getElementById("write-personal-post-btn").onclick = write_personal_post;
+    document.getElementById("view-personal-posts-btn").onclick = read_personal_post_prep;
 
-    document.getElementById("write-group-post-btn").onclick = write_group_post;
-    document.getElementById("view-group-posts-btn").onclick = read_group_post_prep;
+    document.getElementById("write-friend-post-btn").onclick = write_friend_post;
+    document.getElementById("view-friend-posts-btn").onclick = read_friend_post_prep;
 
     document.getElementById('connect-to-channel-btn').onclick = open_chat_prep;
 

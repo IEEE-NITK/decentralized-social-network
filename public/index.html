@@ -44,16 +44,16 @@
                     <a class="nav-link" id="profile-btn" href="#">Profile</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="friends-posts-btn" href="#">Friend Posts</a>
+                    <a class="nav-link" id="personal-posts-btn" href="#">Personal Posts</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="group-posts-btn" href="#">Group Posts</a>
+                    <a class="nav-link" id="friend-posts-btn" href="#">Friends' Posts</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="wall-btn" href="#">Wall of friends' posts</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="start-a-chat-btn" href="#">Start A Chat</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="wall-btn" href="#">Wall of posts</a>
                 </li>
             </ul>
         </div>
@@ -72,8 +72,8 @@
                 <ul>
                     <li>1) Profile: Where you manage your User Profile. Contains functionality to add friends and update
                         your public profile that would be visible to all app users.</li>
-                    <li>2) Friend Posts: Where you send posts to your friends and read theirs for you.</li>
-                    <li>3) Group Posts: Where you can broadcast common messages to all your friends at once.</li>
+                    <li>2) Personal Posts: Where you send private posts to a friend and read their posts to you.</li>
+                    <li>3) Friends' Posts: Where you can broadcast common messages to all your friends at once.</li>
                     <li>4) Start A Chat: Platform to chat with your friends.</li>
                 </ul>
             </div>
@@ -86,7 +86,7 @@
                     <p style="margin-left: 15px;"><strong>This allows you to create the directory for a friend. Simply paste their peer ID
                             below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="create-friend-directory-peer-id" type="email" class="form-control form-control-lg" id="colFormLabelLg"
+                        <input id="create-friend-directory-peer-id" type="text" class="form-control form-control-lg" id="colFormLabelLg"
                             placeholder="Enter the peer's peer ID">
                     </div>
                     <button id="create-friend-directory-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">Create Friend Directory</button><br><br>
@@ -98,7 +98,7 @@
                     <p style="margin-left: 15px;"><strong>This allows you to search for a hello message meant for you in a peer's directory. Simply paste their peer ID
                             below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="peer_peerID" type="email" class="form-control form-control-lg" id="colFormLabelLg"
+                        <input id="peer_peerID" type="text" class="form-control form-control-lg" id="colFormLabelLg"
                             placeholder="Enter the peer's peer ID">
                     </div>
                     <button id="search-peer-directory-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">Search Peer Directory</button><br><br>
@@ -110,12 +110,12 @@
                     <p style="margin-left: 15px;"><strong>This content shows on your public profile, which can be viewed
                             by any user of the app.</strong></p>
                     <div class="col-sm-10">
-                        <input id="profile-info" style="margin-bottom: 10px;" type="email"
+                        <input id="profile-info" style="margin-bottom: 10px;" type="text"
                             class="form-control form-control-lg" id="colFormLabelLg"
                             placeholder="Enter the profile info">
                     </div>
                     <div class="col-sm-10">
-                        <input id="profile-filename" type="email" class="form-control form-control-lg"
+                        <input id="profile-filename" type="text" class="form-control form-control-lg"
                             id="colFormLabelLg" placeholder="Enter the filename to store it under">
                     </div>
                     <button id="save-to-profile-btn" style="margin-left: 15px; margin-top: 20px;"
@@ -129,7 +129,7 @@
                     <p style="margin-left: 15px;"><strong>This allows you to read the public posts of any user on the
                             social network. Simply paste their peer ID below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="read-public-posts-id" type="email" class="form-control form-control-lg"
+                        <input id="read-public-posts-id" type="text" class="form-control form-control-lg"
                             id="colFormLabelLg" placeholder="Enter the user's peer ID">
                     </div>
                     <button id="read-public-posts-btn" style="margin-left: 15px; margin-top: 20px;"
@@ -146,46 +146,46 @@
 
             </div>
 
-            <!-- Friend Posts Page -->
-            <div id='Friend-Posts' style="display: none;">
+            <!-- Personal Posts Page -->
+            <div id='Personal-Posts' style="display: none;">
                 <div class="form-group">
                     <label for="colFormLabelLg" class="col-form-label col-form-label-lg"
-                        style="font-size: 30px; margin-left: 15px;"><strong>Read Your Friend's Posts to
+                        style="font-size: 30px; margin-left: 15px;"><strong>Read Your Friend's Private Posts to
                             You</strong></label><br>
                     <p style="margin-left: 15px;"><strong>This allows you to read the post assigned to you by your
                             friend. Simply paste their peer ID below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="view-friend-posts-id" type="email" class="form-control form-control-lg"
+                        <input id="view-personal-posts-id" type="text" class="form-control form-control-lg"
                             id="colFormLabelLg" placeholder="Enter your friend's peer ID">
                     </div>
-                    <button id="view-friend-posts-btn" style="margin-left: 15px; margin-top: 20px;"
+                    <button id="view-personal-posts-btn" style="margin-left: 15px; margin-top: 20px;"
                         class="btn btn-primary">View Posts</button><br><br>
                 </div>
 
-                <div id="friend-posts-list" style="display: none;">
+                <div id="personal-posts-list" style="display: none;">
                    
                 </div>
 
                 <div class="form-group">
-                    <br><label for="colFormLabelLg" style="font-size: 30px; margin-left: 15px;"><strong>Write a Post to
+                    <br><label for="colFormLabelLg" style="font-size: 30px; margin-left: 15px;"><strong>Write a Private Post to
                             Your Friend</strong></label><br>
                     <p style="margin-left: 15px;"><strong>This allows you to write a post to your friend. Simply paste
-                            his peer ID below.</strong></p>
+                            their peer ID below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="write-friend-post-id" style="margin-bottom: 10px;" type="email"
+                        <input id="write-personal-post-id" style="margin-bottom: 10px;" type="text"
                             class="form-control form-control-lg" id="colFormLabelLg"
                             placeholder="Enter your friend's peer ID">
                     </div>
                     <div class="col-sm-10">
-                        <input id="write-friend-post-content" style="margin-bottom: 10px;" type="email"
+                        <input id="write-personal-post-content" style="margin-bottom: 10px;" type="text"
                             class="form-control form-control-lg" id="colFormLabelLg"
                             placeholder="Enter the content of the post">
                     </div>
                     <div class="col-sm-10">
-                        <input id="write-friend-post-filename" type="email" class="form-control form-control-lg"
+                        <input id="write-personal-post-filename" type="text" class="form-control form-control-lg"
                             id="colFormLabelLg" placeholder="Enter the filename to store it under">
                     </div>
-                    <button id="write-friend-post-btn" style="margin-left: 15px; margin-top: 20px;"
+                    <button id="write-personal-post-btn" style="margin-left: 15px; margin-top: 20px;"
                         class="btn btn-primary">Write the Post</button><br><br>
                 </div>
             </div>
@@ -195,7 +195,7 @@
                 <div id = "Public">
 
                 </div><br>
-                <div id = "Groups">
+                <div id = "Friends">
 
                 </div><br>
                 <div id = "Friends_personal">
@@ -203,41 +203,41 @@
                 </div>
 
             </div>
-            <!-- Group Posts Page -->
-            <div id='Group-Posts' style="display: none;">
+            <!-- Friend Posts Page -->
+            <div id='Friend-Posts' style="display: none;">
                 <div class="form-group">
                     <label for="colFormLabelLg" class="col-form-label col-form-label-lg"
-                        style="font-size: 30px; margin-left: 15px;"><strong>Read Your Friend's Group
+                        style="font-size: 30px; margin-left: 15px;"><strong>Read Your Friends'
                             Posts</strong></label><br>
-                    <p style="margin-left: 15px;"><strong>This allows you to read your friend's group posts. Simply
-                            paste his peer ID below.</strong></p>
+                    <p style="margin-left: 15px;"><strong>This allows you to read your friends' posts. Simply
+                            paste their peer ID below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="read-group-posts-id" type="email" class="form-control form-control-lg"
+                        <input id="read-friend-posts-id" type="text" class="form-control form-control-lg"
                             id="colFormLabelLg" placeholder="Enter your friend's peer ID">
                     </div>
-                    <button id="view-group-posts-btn" style="margin-left: 15px; margin-top: 20px;"
+                    <button id="view-friend-posts-btn" style="margin-left: 15px; margin-top: 20px;"
                         class="btn btn-primary">View Posts</button><br><br>
                 </div>
 
-                <div id="group-posts-list" style="display: none; margin-left: 10px;">
+                <div id="friend-posts-list" style="display: none; margin-left: 10px;">
                     
                 </div>
 
                 <div class="form-group">
-                    <label for="colFormLabelLg" style="font-size: 30px; margin-left: 15px;"><strong>Write a Group
-                            Post</strong></label><br>
-                    <p style="margin-left: 15px;"><strong>This allows you to broadcast a group post that can be viewed
+                    <label for="colFormLabelLg" style="font-size: 30px; margin-left: 15px;"><strong>Write a post to your friends
+                            </strong></label><br>
+                    <p style="margin-left: 15px;"><strong>This allows you to broadcast a post that can be viewed
                             by all your friends.</strong></p>
                     <div class="col-sm-10">
-                        <input id="write-group-post-content" style="margin-bottom: 10px;" type="email"
+                        <input id="write-friend-post-content" style="margin-bottom: 10px;" type="text"
                             class="form-control form-control-lg" id="colFormLabelLg"
                             placeholder="Enter the content of the post">
                     </div>
                     <div class="col-sm-10">
-                        <input id="write-group-post-filename" type="email" class="form-control form-control-lg"
+                        <input id="write-friend-post-filename" type="text" class="form-control form-control-lg"
                             id="colFormLabelLg" placeholder="Enter the filename to store it under">
                     </div>
-                    <button id="write-group-post-btn" style="margin-left: 15px; margin-top: 20px;"
+                    <button id="write-friend-post-btn" style="margin-left: 15px; margin-top: 20px;"
                         class="btn btn-primary">Write the Post</button><br><br>
                 </div>
             </div>
@@ -246,7 +246,7 @@
             <div id='Chat' style="display: none;">
 
                 <div id="Online-Offline-Friends" style="margin-left: 15px;">
-                    <h5><em>Click on a friend to start chatting with them!</em></h5><br>
+                    <h5><em>Click on an online friend to start chatting with them!</em></h5><br>
                     <h3>Online Friends:</h3>
                     <div class="content" id="online_friends" style="color: green;"></div>
                     <br>
@@ -260,7 +260,7 @@
                     <p style="margin-left: 15px;"><strong>This allows you to connect to a channel name decided by you
                             and your friend</strong></p>
                     <div class="col-sm-10">
-                        <input id="chat-channel" style="margin-bottom: 10px;" type="email"
+                        <input id="chat-channel" style="margin-bottom: 10px;" type="text"
                             class="form-control form-control-lg" id="colFormLabelLg"
                             placeholder="Enter the channel name to be used">
                     </div>
@@ -276,7 +276,7 @@
 
                 </div>
                 <div class="col-sm-10">
-                    <input id="chat-message" style="margin-top: 10px; margin-bottom: 10px;" type="email"
+                    <input id="chat-message" style="margin-top: 10px; margin-bottom: 10px;" type="text"
                 class="form-control form-control-lg" id="colFormLabelLg" onkeypress="if(event.key == 'Enter') { return SendMessage(); }" placeholder="Type a message">
                 </div>
                 <button id="send-message-btn" style="margin-left: 15px;" class="btn btn-primary" onclick="return SendMessage();">Send

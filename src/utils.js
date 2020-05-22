@@ -229,7 +229,7 @@ async function searchPeerDirectory(node, db, peer_peerID, multiaddr) {
     return "Friend added successfully!";
 }
 
-async function writePersonalPost (node, db, friend_peer_id, friend_post_content, friend_post_filename) {
+async function writePersonalPost (node, db, friend_peer_id, personal_post_content, personal_post_filename) {
 
     await node.files.mkdir('/root_folder/' + friend_peer_id).catch((err) => {
 
@@ -241,8 +241,8 @@ async function writePersonalPost (node, db, friend_peer_id, friend_post_content,
 
     // Write the post. TODO: move to utils
     let flag = false;
-    const file_path = '/root_folder/' + friend_peer_id + '/personal_post/' + friend_post_filename;
-    await node.files.write(file_path, Buffer.from(friend_post_content), { create: true }).catch((err) => {
+    const file_path = '/root_folder/' + friend_peer_id + '/personal_post/' + personal_post_filename;
+    await node.files.write(file_path, Buffer.from(personal_post_content), { create: true }).catch((err) => {
 
         alert('Unable to create personal post to friend!' + err);
         flag = true;
