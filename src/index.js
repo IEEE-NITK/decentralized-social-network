@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     // await node.files.rm('/root_folder/friends_list.txt');
     // console.log (test)
-    
+
     const isNewProfile = await initialization.createRootFolder(node);
     console.log('Root folder check completed');
 
@@ -444,7 +444,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
             const files = await node.files.ls(file_path);
             
-            e.innerHTML += '<h4 style="margin-left: 15px;"> Friend posts made by ' + friend_multiaddr.split('/')[3] + ' <h4><br>';
+            e.innerHTML += '<br>';
 
             await files.forEach(async(file) => {
                 
@@ -455,7 +455,7 @@ document.addEventListener('DOMContentLoaded', async() => {
                     
                     var post = buf.toString('utf8');
                     console.log(post);
-                    e.innerHTML += ('<div class="card" style="margin-left: 15px; width: 50rem;"><div class="card-body" style="color: black;">' + file.name + ': ' + post + '</div></div><br>');
+                    e.innerHTML += ('<div class="card" style="margin-left: 15px; width: 50rem;"><div class="card-header" style="color: black;">Friend post made by ' + friend_multiaddr.split('/')[3] + '</div><div class="card-body" style="color: black;">' + file.name + ': ' + post + '</div></div><br>');
                 }
     
             });
