@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     let username = "";
     await node.files.read(usernamePath).catch(async (err) => {
-        username = prompt("Please enter a username", "Username");
+        username = prompt("Please enter a username (will be used in the chat)", "Username");
         await node.files.write(usernamePath, Buffer.from(username), { create: true }).catch((err) => {});
     });
 
@@ -112,6 +112,9 @@ document.addEventListener('DOMContentLoaded', async() => {
     document.getElementById('peer-id').innerText = my_peer_id;
 
     // Initialization phase over
+
+    // const res = await ipfs.bootstrap.rm(null, { all: true })
+    // console.log(res.Peers)
     
     async function add_data_to_public_profile() {
 
@@ -514,6 +517,21 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function read_group_post_prep()
     {
         var peerid = document.getElementById("read-group-posts-id").value;
+
+        var flag = false;
+        for (const friend_multiaddr of friend_multiaddr_list) {
+            if (friend_multiaddr.split('/')[3] == peerid) {
+                flag = true;
+                break;
+            }
+        }
+
+        if (flag == false)
+        {
+            alert ("That peer is not your friend!");
+            return false;
+        }
+
         const file_path = await read_group_post(peerid);
         const files = await node.files.ls(file_path);
         console.log(files);
