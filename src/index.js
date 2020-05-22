@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', async() => {
     const node = await initialization.createNode(IPFS);
     console.log('IPFS node is ready');
 
+    // await node.files.rm('/root_folder/friends_list.txt');
+    // console.log (test)
+    
     const isNewProfile = await initialization.createRootFolder(node);
     console.log('Root folder check completed');
 
@@ -482,6 +485,24 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         // Display the requested section
         display("Personal-Posts");
+    }
+
+    // Display the Friend Posts Page
+    document.getElementById("swarm-connect-btn").onclick = async () => {
+
+        for (const friend_multiaddr of friend_multiaddr_list) {
+            try
+            {
+                await node.swarm.connect(friend_multiaddr);
+            }
+            catch (err) 
+            {
+
+            }
+        }
+
+        alert ("Swarm connect completed!");
+
     }
 
     // Display the Friend Posts Page
