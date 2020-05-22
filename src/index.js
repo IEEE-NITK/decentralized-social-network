@@ -155,15 +155,21 @@ document.addEventListener('DOMContentLoaded', async() => {
         let file_path = '/ipfs/' + profile[0].root_hash + '/public_profile/';
         const files = await node.files.ls(file_path);
 
+        var e = document.getElementById('public-posts-list')
+        e.innerHTML = '<h3 style="margin-left: 15px; color: green;">Public Posts by Given Peer:<h3><br>';
         files.forEach(async(file) => {
 
             console.log(file);
+            
             if (file.type == 0) {
 
-                const buf = await node.files.read('/root_folder/public_profile/' + file.name);
-
+                const buf = await node.files.read(file_path + '' + file.name);
+                e.innerHTML += ``
+                
                 // TODO: add to HTML instead of console.log()
-                console.log(buf.toString('utf8'));
+                var post = buf.toString('utf8');
+                console.log(post);
+                e.innerHTML += ('<div class="card" style="margin-left: 15px; width: 50rem;"><div class="card-body" style="color: black;">' + file.name + ': ' + post + '</div></div><br>');
             }
 
         });
@@ -403,6 +409,8 @@ document.addEventListener('DOMContentLoaded', async() => {
         document.getElementById('Chat').style.display = 'none';
         document.getElementById('Chat-Body').style.display = 'none';
         document.getElementById('Wall-Posts').style.display = 'none';
+        document.getElementById('Friends').innerHTML = "";
+
         // document.getElementById('Online-Offline-Friends').style.display = 'none';
     
         document.getElementById(idToBeDisplayed).style.display = 'block';
@@ -419,7 +427,6 @@ document.addEventListener('DOMContentLoaded', async() => {
     {
 
         var e = document.getElementById('Friends');
-        friend_multiaddr_list = ['/p2p-circuit/ipfs/QmXTfW8Cd7P29mJ2VQr5JKkRbsjTrHM4sPzLnQVnMJhxTY', '/p2p-circuit/ipfs/QmXTfW8Cd7P29mJ2VQr5JKkRbsjTrHM4sPzLnQVnMJhxTY'];
         for (const friend_multiaddr of friend_multiaddr_list) {
 
             let friend_peerid = friend_multiaddr.split('/')[3];
@@ -434,7 +441,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
             const files = await node.files.ls(file_path);
             
-            e.innerHTML += "<h4> Friend posts made by " + friend_multiaddr.split('/')[3] + " <h4><br>";
+            e.innerHTML += '<h4 style="margin-left: 15px;"> Friend posts made by ' + friend_multiaddr.split('/')[3] + ' <h4><br>';
 
             await files.forEach(async(file) => {
                 
@@ -445,7 +452,7 @@ document.addEventListener('DOMContentLoaded', async() => {
                     
                     var post = buf.toString('utf8');
                     console.log(post);
-                    e.innerHTML += ('<div style = "border:solid 2px"><h5>' + file.name + ': ' + post + '</h5></div><br>');
+                    e.innerHTML += ('<div class="card" style="margin-left: 15px; width: 50rem;"><div class="card-body" style="color: black;">' + file.name + ': ' + post + '</div></div><br>');
                 }
     
             });
@@ -586,7 +593,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         const files = await node.files.ls(file_path);
         console.log(files);
         var e = document.getElementById('friend-posts-list')
-        e.innerHTML = "<h3> POSTS <h3>";
+        e.innerHTML = '<h3 style="margin-left: 15px; color: green;">Posts by friend<h3><br>';
         files.forEach(async(file) => {
 
             console.log(file);
@@ -599,7 +606,7 @@ document.addEventListener('DOMContentLoaded', async() => {
                 // TODO: add to HTML instead of console.log()
                 var post = buf.toString('utf8');
                 console.log(post);
-                e.innerHTML += ('<div style = "border:solid 2px"><h3>' + file.name + ':' + post + '</h3></div>');
+                e.innerHTML += ('<div class="card" style="margin-left: 15px; width: 50rem;"><div class="card-body" style="color: black;">' + file.name + ': ' + post + '</div></div><br>');
             }
 
         });
@@ -614,7 +621,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         var peerid = document.getElementById("view-personal-posts-id").value;
         const file_path = await read_personal_post(peerid);
         var e = document.getElementById('personal-posts-list');
-        e.innerHTML = "<h3> POSTS <h3>";
+        e.innerHTML = '<h3 style="margin-left: 15px; color: green;"> Personal Posts <h3><br>';
 
         const files = await node.files.ls(file_path);
     
@@ -629,7 +636,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
                 // TODO: add to HTML instead of console.log()
                 console.log(post);
-                e.innerHTML += ('<div style = "border:solid 2px"><h3>' + file.name + ':' + post + '</h3></div>');
+                e.innerHTML += ('<div class="card" style="margin-left: 15px; width: 50rem;"><div class="card-body" style="color: black;">' + file.name + ': ' + post + '</div></div><br>');
             }
     
         });
