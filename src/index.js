@@ -539,7 +539,7 @@ document.addEventListener('DOMContentLoaded', async() => {
             }
 
             if (flag == 0) {
-                offline_friends = offline_friends.concat(friend_multiaddr, '<br>');
+                offline_friends = offline_friends.concat('<a href=\"\" onclick=\"return OpenChat(\'' + friend_multiaddr + '\');\">', friend_uname, "</a><br>");
             }
         }
 
