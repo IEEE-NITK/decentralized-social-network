@@ -1,0 +1,49 @@
+/* body, html {
+    background-color: #000;
+    color: #fff;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+canvas {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -9999;
+  }
+
+#content {
+z-index: 10;
+position: relative;
+} */
+
+/* width */
+
+::-webkit-scrollbar {
+    width: 5px;
+    height: 15px;
+}
+
+
+/* Track */
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px grey;
+    border-radius: 3px;
+}
+
+
+/* Handle */
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+}
+
+a {
+    outline: none;
+}

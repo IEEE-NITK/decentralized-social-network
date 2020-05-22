@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <title>js-ipfs example</title>
+    <script src="bundle.js"></script>
+    <style>
+      .content {
+        border: 1px solid black;
+        padding: 10px;
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>JS IPFS - Add data to IPFS from the browser</h1>
+    <textarea id="source" placeholder="Enter some text here"></textarea>
+    <br>
+    <button id="store">Add text to ipfs</button>
+    <br><br>
+    <div id="output" style="display: none">
+      <div>found in ipfs:</div>
+      <div class="content" id="hash">[ipfs hash]</div>
+      <div class="content" id="content">[ipfs content]</div>
+    </div>
+    <br><br><br>
+
+
+
+    <h2>Create root folder and public profile</h2>
+    <button id="create_root_folder">Create</button>
+    <br><br><br>
+
+    
+    <h2>Add your details to the DB</h2>
+    <button id="add_details_to_DB">Add</button>
+    <br><br><br>
+
+
+    
+    <h2>Create Directory for Friend</h2>
+
+    Friend's PeerID:<br>
+    <input type="text" name="friendpeerID" id="friend_peerID"/><br><br><br>
+    <button id="create_friend_directory">Create Directory</button>
+
+    <br><br>
+
+
+
+    <h2>Search peer's root folder for your directory</h2>
+
+    Peer's PeerID: <br>
+    <input type="text" id="peer_peerID"/><br><br>
+    <button id="search_peer_directory">Search</button>
+
+
+    
+    <h2>Add data to your public profile</h2>
+
+    File name:<br>
+    <input type="text" name="file_name" id="filename"/><br>
+    Data:<br>
+    <input type="text" name="file_data" id="filedata"/><br><br>
+    <button id="data_to_public_profile">Add data</button>
+
+
+    <h2>Chat with friends</h2>
+    <button id="open_chat">Activate Chat</button>
+    <br><br><br>
+
+    
+    <div id="chat" style="display: none">
+      <h3>Online Friends:</h3>
+      <div class="content" id="online_friends">[ipfs online_friends]</div>
+
+      <h3>Offline Friends:</h3>
+      <div class="content" id="offline_friends">[ipfs offline_friends]</div>
+    </div>
+
+  </body>
+</html>

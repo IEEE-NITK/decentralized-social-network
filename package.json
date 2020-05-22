@@ -1,0 +1,32 @@
+{
+  "name": "bundle-browserify",
+  "version": "1.0.0",
+  "description": "Bundle js-ipfs with Browserify",
+  "main": "index.js",
+  "scripts": {
+    "bundle": "watchify src/index.js -o public/bundle.js -d -v & http-server public -a 127.0.0.1 -p 8888",
+    "start": "npm run bundle;"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "dependencies": {
+    "babel-cli": "^6.26.0",
+    "browserify": "^16.2.3",
+    "concat-stream": "^2.0.0",
+    "execa": "^3.2.0",
+    "http-server": "~0.11.1",
+    "ipfs": "0.40.0",
+    "ipfs-mfs": "^1.0.0",
+    "ipfs-repo": "0.30.1",
+    "libsodium-wrappers": "^0.7.6",
+    "multiaddr": "^7.4.3",
+    "node-rsa": "^1.0.7",
+    "orbit-db": "^0.23.1",
+    "orbit_": "0.2.0-rc1",
+    "watchify": "^3.11.1",
+    "webpack": "^4.43.0"
+  },
+  "browser": {
+    "ipfs": "ipfs/dist"
+  }
+}
