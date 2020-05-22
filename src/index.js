@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
 
     document.getElementById("create-friend-directory-btn").onclick = create_friend_directory;
-    document.getElementById("search-peer-directory-btn").onclick = search_peer_directory;
+    // document.getElementById("search-peer-directory-btn").onclick = search_peer_directory;
 
     document.getElementById('save-to-profile-btn').onclick = add_data_to_public_profile;
     document.getElementById("read-public-posts-btn").onclick = read_public_posts;
