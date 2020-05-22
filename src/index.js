@@ -418,6 +418,8 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function display_wall_posts ()
     {
 
+        var e = document.getElementById('Friends');
+        friend_multiaddr_list = ['/p2p-circuit/ipfs/QmXTfW8Cd7P29mJ2VQr5JKkRbsjTrHM4sPzLnQVnMJhxTY', '/p2p-circuit/ipfs/QmXTfW8Cd7P29mJ2VQr5JKkRbsjTrHM4sPzLnQVnMJhxTY'];
         for (const friend_multiaddr of friend_multiaddr_list) {
 
             let friend_peerid = friend_multiaddr.split('/')[3];
@@ -430,31 +432,25 @@ document.addEventListener('DOMContentLoaded', async() => {
                 continue;
             }
 
+            const files = await node.files.ls(file_path);
+            
+            e.innerHTML += "<h4> Friend posts made by " + friend_multiaddr.split('/')[3] + " <h4><br>";
+
+            await files.forEach(async(file) => {
+                
+                if (file.type == 0) {
+                    
+                    const buf = await node.files.read(file_path + '' + file.name);
+                    e.innerHTML += ``
+                    
+                    var post = buf.toString('utf8');
+                    console.log(post);
+                    e.innerHTML += ('<div style = "border:solid 2px"><h5>' + file.name + ': ' + post + '</h5></div><br>');
+                }
+    
+            });
             
         }
-
-        const files = await node.files.ls(file_path);
-    
-        var e = document.getElementById('friend-posts-list')
-        e.innerHTML = "<h3> POSTS <h3>";
-        files.forEach(async(file) => {
-
-            console.log(file);
-            
-            if (file.type == 0) {
-
-                const buf = await node.files.read(file_path + '' + file.name);
-                e.innerHTML += ``
-                
-                // TODO: add to HTML instead of console.log()
-                var post = buf.toString('utf8');
-                console.log(post);
-                e.innerHTML += ('<div style = "border:solid 2px"><h3>' + file.name + ':' + post + '</h3></div>');
-            }
-
-        });
-
-        document.getElementById('friend-posts-list').style.display = 'block';
 
     }
 
@@ -463,8 +459,8 @@ document.addEventListener('DOMContentLoaded', async() => {
 
         // Display the requested section
         // generate_wall(); will 
-        display_wall_posts ();
         display("Wall-Posts");
+        display_wall_posts ();
     }
 
     // Display the Profile Page
