@@ -22,8 +22,10 @@
 - [Inspiration](#inspiration)
 
 ## General Info
-This project aims to implement a Decentralized, Secure Social Network based on IPFS. There are numerous advantages of the decentralized approach - the user has the key to decrypt and modify their own data and hence have complete control over their data. They can grant and revoke control from third parties.  
-In our Social Network model, everyone’s data is just ‘out there’ - many copies floating around in encrypted blobs that anyone can host or download but only friends can decrypt. Decentralization also provides robustness against censorship, internet outages, and would-be social monopolies.
+
+In Decentralized systems, there is no single central location of data. Instead, multiple copies of the data are present on different nodes on the network. This solves many of the issues that are faced by a centralized model, by removing a single point of authority, ensuring that the user has complete control over their own data, and making sure that there is no single point of failure. However, this comes at the cost of many implementation challenges, which are dealt with in pretty interesting ways.  
+
+This project aims to implement a Decentralized, Secure Social Network based on IPFS. In our Social Network model, everyone’s data is just ‘out there’ - many copies floating around in encrypted blobs that anyone can host or download but only friends can decrypt.
 
 ## Screenshots
 
