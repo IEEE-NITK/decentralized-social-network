@@ -8,14 +8,17 @@ async function updateDB(node, db) {
     // Get new root folder hash
     const new_root_hash = await node.files.stat('/root_folder');
 
-    let record = await db.get(myPeerId);
+    const usernamePath = '/root_folder/username.txt';
+    let username = (await node.files.read(usernamePath)).toString('utf8');
+
+    let record = await db.get(username);
     record[0].root_hash = new_root_hash.hash;
 
     console.log('New root folder hash is: ' + new_root_hash.hash);
 
     // Update the DB.
     db.put(record[0])
-    .then(() => db.get(myPeerId))
+    .then(() => db.get(username))
     .then((value) => {
         console.log('The DB has been updated with the new root folder hash');
     });
@@ -204,7 +207,7 @@ async function searchPeerDirectory(node, db, peer_peerID, multiaddr) {
 
     console.log(secretMessage);
 
-    friend_multiaddr_list.push(friend_address);
+    friend_username_list.push(friend_address);
 
     const friendsListPath = '/root_folder/friends_list.txt';
 
@@ -229,7 +232,10 @@ async function searchPeerDirectory(node, db, peer_peerID, multiaddr) {
     return "Friend added successfully!";
 }
 
-async function writePersonalPost (node, db, friend_peer_id, personal_post_content, personal_post_filename) {
+async function writePersonalPost (node, db, friend_peer_username, personal_post_content, personal_post_filename) {
+
+    let profile = await db.get(friend_peer_username);
+    let friend_peer_id = profile['0']['_id'];
 
     await node.files.mkdir('/root_folder/' + friend_peer_id).catch((err) => {
 
@@ -254,7 +260,7 @@ async function writePersonalPost (node, db, friend_peer_id, personal_post_conten
     // Update root folder hash in the DB
     await updateDB(node, db);
 
-    alert("Personal post to " + friend_peer_id + " has been written!");
+    alert("Personal post to " + friend_peer_username + " has been written!");
 
 }
 

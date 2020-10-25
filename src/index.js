@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     let username = "";
     await node.files.read(usernamePath).catch(async (err) => {
-        username = prompt("Please enter a username (will be used in the chat)", "Username");
+        username = prompt("Please enter a username", "Username");
         await node.files.write(usernamePath, Buffer.from(username), { create: true }).catch((err) => {});
     });
 
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async() => {
     // console.log(res.Peers)
 
     // Friend peer address list stored within root_folder, on a flat file
-    let friend_multiaddr_list = await initialization.loadFriendsList(node, isNewProfile);
+    let friend_username_list = await initialization.loadFriendsList(node, isNewProfile);
 
     const db = await initialization.connectToDB(node, OrbitDB);
     console.log('Successfully connected to orbit-DB at address: ' + db.address.toString());
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
     orbit.connect(orbit_username).catch(e => console.error(e));
 
-    document.getElementById('peer-id').innerText = my_peer_id;
+    document.getElementById('main-username').innerText = orbit_username;
 
     // Initialization phase over
 
@@ -140,10 +140,10 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function read_public_posts () {
 
         // Extract the contents of the submission
-        var peer_peerID = document.getElementById("read-public-posts-id").value;
+        var peer_username = document.getElementById("read-public-posts-username").value;
 
         // Querying database for this peer's root folder hash
-        const profile = await db.get(peer_peerID)
+        const profile = await db.get(peer_username)
 
         if (!(profile && profile.length)) 
         {   
@@ -184,13 +184,16 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function create_friend_directory() {
 
         // Extract the contents of the submission
-        var friend_peer_id = document.getElementById("create-friend-directory-peer-id").value;
+        var friend_peer_username = document.getElementById("create-friend-directory-peer-username").value;
 
         // Ensure the fields weren't empty on submission
-        if (!(friend_peer_id)) {
+        if (!(friend_peer_username)) {
             alert("Please enter a value before submitting.");
             return;
         }
+
+        let profile = await db.get(friend_peer_username);
+        let friend_peer_id = profile['0']['_id'];
 
         let friend_address = '/p2p-circuit/ipfs/' + friend_peer_id;
 
@@ -212,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         if(success) {
 
             let new_friend = '/p2p-circuit/ipfs/' + friend_peer_id;
-            friend_multiaddr_list.push(new_friend);
+            friend_username_list.push(friend_peer_username);
 
             const friendsListPath = '/root_folder/friends_list.txt';
 
@@ -234,7 +237,7 @@ document.addEventListener('DOMContentLoaded', async() => {
 
             // Update root folder hash in the DB
             await utils.updateDB(node, db);
-            alert("Directory for peer " + friend_peer_id + " created!");
+            alert("Directory for friend " + friend_peer_username + " created!");
         }
 
         else {
@@ -256,26 +259,26 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function write_personal_post() { 
 
         // Extract the contents of the submission
-        var friend_peer_id = document.getElementById("write-personal-post-id").value;
+        var friend_peer_username = document.getElementById("write-personal-post-username").value;
         var personal_post_content = document.getElementById("write-personal-post-content").value;
         var personal_post_filename = document.getElementById("write-personal-post-filename").value;
 
         // Ensure the fields weren't empty on submission
-        if (!(friend_peer_id) || !(personal_post_content) || !(personal_post_filename)) {
+        if (!(friend_peer_username) || !(personal_post_content) || !(personal_post_filename)) {
             alert("Please enter all values before submitting.");
             return;
         }
  
-        await utils.writePersonalPost(node, db, friend_peer_id, personal_post_content, personal_post_filename);
+        await utils.writePersonalPost(node, db, friend_peer_username, personal_post_content, personal_post_filename);
     }
 
-    async function read_personal_post(peerid) {
+    async function read_personal_post(peername) {
     
         // Extract the submitted value
-        var friend_peer_id = peerid;
+        var friend_peer_name = peername;
 
         // Ensure the form wasn't empty on submission
-        if (!(friend_peer_id)) {
+        if (!(friend_peer_name)) {
             alert("Please enter a value before submitting.");
             return;
         }
@@ -287,7 +290,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         // TODO: Move to utils
         
         // Querying database for this peer's root folder hash
-        const profile = await db.get(friend_peer_id)
+        const profile = await db.get(friend_peer_name)
 
         if (!(profile && profile.length)) 
         {   
@@ -338,13 +341,13 @@ document.addEventListener('DOMContentLoaded', async() => {
     }
 
     // Function to read the posts within the friend folder of a peerid
-    async function read_friend_post(peerid) {
+    async function read_friend_post(peerusername) {
 
         // Extract the contents of the submission
-        var friend_peer_id = peerid;
+        var friend_peer_username = peerusername;
 
         // Ensure the fields weren't empty on submission
-        if (!(friend_peer_id)) {
+        if (!(friend_peer_username)) {
             alert("Please enter all values before submitting.");
             return;
         }
@@ -356,7 +359,7 @@ document.addEventListener('DOMContentLoaded', async() => {
         // TODO: Use the friends Key to decrypt the contents of the friend Posts
 
         // Querying database for this peer's root folder hash
-        const profile = await db.get(friend_peer_id)
+        let profile = await db.get(peerusername);
 
         if (!(profile && profile.length))
             return null;
@@ -430,11 +433,9 @@ document.addEventListener('DOMContentLoaded', async() => {
     {
 
         var e = document.getElementById('Friends');
-        for (const friend_multiaddr of friend_multiaddr_list) {
+        for (const friend_username of friend_username_list) {
 
-            let friend_peerid = friend_multiaddr.split('/')[3];
-
-            const file_path = await read_friend_post (friend_peerid);
+            const file_path = await read_friend_post (friend_username);
 
             if (!(file_path && file_path.length))
             {
@@ -455,7 +456,7 @@ document.addEventListener('DOMContentLoaded', async() => {
                     
                     var post = buf.toString('utf8');
                     console.log(post);
-                    e.innerHTML += ('<div class="card" style="margin-left: 15px; width: 50rem;"><div class="card-header" style="color: black;">Friend post made by ' + friend_multiaddr.split('/')[3] + '</div><div class="card-body" style="color: black;">' + file.name + ': ' + post + '</div></div><br>');
+                    e.innerHTML += ('<div class="card" style="margin-left: 15px; width: 50rem;"><div class="card-header" style="color: black;">Friend post made by ' + friend_username + '</div><div class="card-body" style="color: black;">' + file.name + ': ' + post + '</div></div><br>');
                 }
     
             });
@@ -490,10 +491,20 @@ document.addEventListener('DOMContentLoaded', async() => {
     // Display the Friend Posts Page
     document.getElementById("swarm-connect-btn").onclick = async () => {
 
-        for (const friend_multiaddr of friend_multiaddr_list) {
+        let friend_address = '/p2p-circuit/ipfs/QmNiQ2gGpqesBQfwRFLc5pU71ghhgWTHeBJWX3aEcvuuUy';
+
+        // First add friend to bootstrap list and attempt to connect to them.
+        // await node.bootstrap.add(friend_address)
+        // console.log('Added friend to bootstrap list!');
+
+        await node.swarm.connect('/p2p-circuit/ipfs/QmWhQHPTgNeYEdaFG8Ycac4PtC5jfuuAcxJSQsGAFxCTx5');
+        await node.swarm.connect('/p2p-circuit/ipfs/QmczrJe4Wn9si7EJ2vQSoxYr5J4UVmYWfr8Ze2VqgCmT73');
+
+
+        for (const friend_username of friend_username_list) {
             try
             {
-                await node.swarm.connect(friend_multiaddr);
+                // await node.swarm.connect(friend_multiaddr);
             }
             catch (err) 
             {
@@ -501,6 +512,8 @@ document.addEventListener('DOMContentLoaded', async() => {
             }
         }
 
+        const peerInfos = await node.swarm.peers()
+        console.log(peerInfos)
         alert ("Swarm connect completed!");
 
     }
@@ -537,22 +550,26 @@ document.addEventListener('DOMContentLoaded', async() => {
         let online_friends = "";
 
         // console.log(swarm_peers['5'].addr.toString())
-        for (const friend_multiaddr of friend_multiaddr_list) {
+        for (const friend_username of friend_username_list) {
             let flag = 0;
-            let friend_uname = "";
-
+            
+            let profile = await db.get(friend_username);
+            let peeriD;
+            console.log (profile);
             try {
-                let test = await db.get(friend_multiaddr.split('/')[3]);
-                friend_uname = test['0']['username'];
+                peeriD = profile['0']['_id'];
             }
             catch (err) {
-                friend_uname = friend_multiaddr;
+                console.log (err);
+                continue;
             }
+
+            peeriD = '/p2p-circuit/ipfs/' + '' + peeriD;
 
             for (const swarm_peer of swarm_peers) {
                 
-                if (swarm_peer['addr']['buffer'].toString() == friend_multiaddr) {
-                    online_friends = online_friends.concat('<a href=\"\" onclick=\"return OpenChat(\'' + friend_multiaddr + '\');\">', friend_uname, "</a><br>");
+                if (swarm_peer['addr']['buffer'].toString() == peeriD) {
+                    online_friends = online_friends.concat('<a href=\"\" onclick=\"return OpenChat(\'' + peeriD + '\');\">', friend_username, "</a><br>");
                     flag = 1;
                     break;
                 }
@@ -560,7 +577,7 @@ document.addEventListener('DOMContentLoaded', async() => {
             }
 
             if (flag == 0) {
-                offline_friends = offline_friends.concat('<a href=\"\" onclick=\"return OpenChat(\'' + friend_multiaddr + '\');\">', friend_uname, "</a><br>");
+                offline_friends = offline_friends.concat('<a href=\"\" onclick=\"return OpenChat(\'' + peeriD + '\');\">', friend_username, "</a><br>");
             }
         }
 
@@ -587,11 +604,11 @@ document.addEventListener('DOMContentLoaded', async() => {
     
     async function read_friend_post_prep()
     {
-        var peerid = document.getElementById("read-friend-posts-id").value;
+        var peerusernamee = document.getElementById("read-friend-posts-username").value;
 
         var flag = false;
-        for (const friend_multiaddr of friend_multiaddr_list) {
-            if (friend_multiaddr.split('/')[3] == peerid) {
+        for (const friend_username of friend_username_list) {
+            if (friend_username == peerusernamee) {
                 flag = true;
                 break;
             }
@@ -603,7 +620,7 @@ document.addEventListener('DOMContentLoaded', async() => {
             return false;
         }
 
-        const file_path = await read_friend_post(peerid);
+        const file_path = await read_friend_post(peerusernamee);
 
         if (!(file_path && file_path.length))
         {
@@ -639,8 +656,8 @@ document.addEventListener('DOMContentLoaded', async() => {
     async function read_personal_post_prep()
     {
         
-        var peerid = document.getElementById("view-personal-posts-id").value;
-        const file_path = await read_personal_post(peerid);
+        var peerusername = document.getElementById("view-personal-posts-username").value;
+        const file_path = await read_personal_post(peerusername);
         var e = document.getElementById('personal-posts-list');
         e.innerHTML = '<h3 style="margin-left: 15px; color: green;"> Personal Posts <h3><br>';
 

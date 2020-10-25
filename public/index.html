@@ -66,7 +66,7 @@
 
             <!-- Home Page -->
             <div id='Home' style="font-size: 20px; margin-left: 15px; margin-top: 10px;">
-                <p>Welcome to The Decentralized Social Network! Your peer ID is <span id="peer-id" style="color: powderblue"></span></p><br>
+                <p>Welcome to The Decentralized Social Network! Your username is <span id="main-username" style="color: lightseagreen"></span></p><br>
                 <p>An application providing all the features of a regular social networking website, but with the added
                     benefits of absolute privacy and control over your own data, without the involvement of third
                     parties.</p><br>
@@ -84,12 +84,12 @@
             <div id="Profile" style="display: none;">
                 <div class="form-group">
                     <label for="colFormLabelLg" class="col-sm-12 col-form-label col-form-label-lg"
-                        style="font-size: 30px;"><strong>Create friend directory</strong></label><br>
-                    <p style="margin-left: 15px;"><strong>This allows you to create the directory for a friend. Simply paste their peer ID
+                        style="font-size: 30px;"><strong>Add a friend</strong></label><br>
+                    <p style="margin-left: 15px;"><strong>This allows you to create the directory for a friend. Simply write their username
                             below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="create-friend-directory-peer-id" type="text" class="form-control form-control-lg" id="colFormLabelLg"
-                            placeholder="Enter the peer's peer ID">
+                        <input id="create-friend-directory-peer-username" type="text" class="form-control form-control-lg" id="colFormLabelLg"
+                            placeholder="Enter the peer's username">
                     </div>
                     <button id="create-friend-directory-btn" style="margin-left: 15px; margin-top: 20px;" class="btn btn-primary">Create Friend Directory</button><br><br>
                 </div>
@@ -129,10 +129,10 @@
                         style="font-size: 30px; margin-left: 15px;"><strong>Read a person's public profile
                             content</strong></label><br>
                     <p style="margin-left: 15px;"><strong>This allows you to read the public posts of any user on the
-                            social network. Simply paste their peer ID below.</strong></p>
+                            social network. Simply enter their username below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="read-public-posts-id" type="text" class="form-control form-control-lg"
-                            id="colFormLabelLg" placeholder="Enter the user's peer ID">
+                        <input id="read-public-posts-username" type="text" class="form-control form-control-lg"
+                            id="colFormLabelLg" placeholder="Enter the user's username">
                     </div>
                     <button id="read-public-posts-btn" style="margin-left: 15px; margin-top: 20px;"
                         class="btn btn-primary">View Posts</button><br><br>
@@ -155,10 +155,10 @@
                         style="font-size: 30px; margin-left: 15px;"><strong>Read Your Friend's Private Posts to
                             You</strong></label><br>
                     <p style="margin-left: 15px;"><strong>This allows you to read the post assigned to you by your
-                            friend. Simply paste their peer ID below.</strong></p>
+                            friend. Simply enter their username below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="view-personal-posts-id" type="text" class="form-control form-control-lg"
-                            id="colFormLabelLg" placeholder="Enter your friend's peer ID">
+                        <input id="view-personal-posts-username" type="text" class="form-control form-control-lg"
+                            id="colFormLabelLg" placeholder="Enter your friend's username">
                     </div>
                     <button id="view-personal-posts-btn" style="margin-left: 15px; margin-top: 20px;"
                         class="btn btn-primary">View Posts</button><br><br>
@@ -174,9 +174,9 @@
                     <p style="margin-left: 15px;"><strong>This allows you to write a post to your friend. Simply paste
                             their peer ID below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="write-personal-post-id" style="margin-bottom: 10px;" type="text"
+                        <input id="write-personal-post-username" style="margin-bottom: 10px;" type="text"
                             class="form-control form-control-lg" id="colFormLabelLg"
-                            placeholder="Enter your friend's peer ID">
+                            placeholder="Enter your friend's username">
                     </div>
                     <div class="col-sm-10">
                         <input id="write-personal-post-content" style="margin-bottom: 10px;" type="text"
@@ -206,10 +206,10 @@
                         style="font-size: 30px; margin-left: 15px;"><strong>Read Your Friends'
                             Posts</strong></label><br>
                     <p style="margin-left: 15px;"><strong>This allows you to read your friends' posts. Simply
-                            paste their peer ID below.</strong></p>
+                            enter their username below.</strong></p>
                     <div class="col-sm-10">
-                        <input id="read-friend-posts-id" type="text" class="form-control form-control-lg"
-                            id="colFormLabelLg" placeholder="Enter your friend's peer ID">
+                        <input id="read-friend-posts-username" type="text" class="form-control form-control-lg"
+                            id="colFormLabelLg" placeholder="Enter your friend's username">
                     </div>
                     <button id="view-friend-posts-btn" style="margin-left: 15px; margin-top: 20px;"
                         class="btn btn-primary">View Posts</button><br><br>

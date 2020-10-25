@@ -1,7 +1,14 @@
 
 async function createNode(IPFS) {
 
-    const node = await IPFS.create({ repo: 'ipfs_repository' });
+    const node = await IPFS.create(
+        { repo: 'ipfs_repository', 
+          preload: { enabled: false },
+        config: {
+            
+            
+          }});
+        
     return node;
 
 }
@@ -61,12 +68,12 @@ async function connectToDB(node, OrbitDB) {
         accessController: {
             write: ['*'],
         },
-        // indexBy: 'peerID',
+        indexBy: 'username',
         pin: true
     };
 
     // Create / Open a database
-    const db = await orbitdb.docs("users_database4", options);
+    const db = await orbitdb.docs("users_db9", options);
 
     // Load locally persisted data
     await db.load();
@@ -95,7 +102,7 @@ async function createDB(node, OrbitDB) {
         accessController: {
             write: ['*'],
         },
-        // indexBy: 'peerID',
+        indexBy: 'username',
         pin: true
     };
 
@@ -123,7 +130,7 @@ async function loadFriendsList(node, isNewProfile) {
     });
 
     if (flag) {
-        await node.files.write('/root_folder/friends_list.txt', Buffer.from(''), { create: true })
+        await node.files.write('/root_folder/friends_list.txt', Buffer.from(''), { create: true });
         console.log('Created friends list file');
     }
 
